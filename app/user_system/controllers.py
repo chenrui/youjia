@@ -27,15 +27,7 @@ class Account(BaseResource):
         elif action == 'photo':
             return self.upload_photo()
         elif action == 'profile':
-            return self.set_user_info()
-        elif action == 'reset_password':
-            return self.reset_password()
-        elif action == 'verify_password':
-            return self.verify_password()
-        elif action == 'change_status':
-            return self.change_user_status()
-        elif action == 'delete_users':
-            return self.delete_users()
+            return self.set_user_basic_info()
         self.bad_request(errorcode.BAD_REQUEST)
 
     def get(self, action):
@@ -46,18 +38,10 @@ class Account(BaseResource):
         elif action == 'photo':
             return self.get_photo()
         elif action == 'profile':
-            return self.get_user_info()
-        elif action == 'user_list':
-            return self.get_user_list()
-        elif action == 'tenant_list':
-            return self.get_admin_and_tenant()
-        elif action == 'search':
-            return self.search()
+            return self.get_user_basic_info()
         self.bad_request(errorcode.BAD_REQUEST)
 
     def put(self, action):
-        if action == 'setting':
-            return self.set_user_info()
         self.bad_request(errorcode.BAD_REQUEST)
 
     @login_required
@@ -152,7 +136,7 @@ class Account(BaseResource):
         return self.ok('ok')
 
     @login_required
-    def set_user_info(self):
+    def set_user_basic_info(self):
         parser = self.get_parser()
         parser.add_argument('user_id', type=int, required=True, location='args')
         user_id = self.get_param('user_id')
@@ -165,7 +149,7 @@ class Account(BaseResource):
                 self.bad_request(errorcode.NOT_FOUND)
 
     @login_required
-    def get_user_info(self):
+    def get_user_basic_info(self):
         parser = self.get_parser()
         parser.add_argument('user_id', type=int, required=True, location='args')
         user_id = self.get_param('user_id')
@@ -181,6 +165,36 @@ class Account(BaseResource):
             'user_name': user.name,
             'phone': user.phone,
         }
+
+    @login_required
+    def get_users(self):
+        parser = self.get_parser()
+        self.add_pagination_args(parser)
+        parser.add_argument('role', type=str, required=True, location='json',
+                            choices=(RoleType.teacher, RoleType.student))
+        role_name = self.get_param('role')
+        page, page_size = self.get_params('page', 'page_size')
+        total, users = user_datastore.get_users(role_name, page, page_size)
+        items = []
+        if role_name == RoleType.teacher:
+            for user in users:
+                info = {
+                    'real_name': user.name,
+                    'school': user.teacher.school,
+                    'major': user.teacher.major,
+                    'detail': user.teacher.detail,
+                }
+                items.append(info)
+        else:
+            pass
+        return {
+            'total': total,
+            'items': items,
+        }
+
+
+
+
 
 
 

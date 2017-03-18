@@ -34,6 +34,10 @@ class User(BaseModel, db.Model, UserMixin):
     create_time = db.Column(db.DateTime, default=datetime.now)
     roles = db.relationship('Role', secondary=role_user_relationship,
                             backref=db.backref('users', lazy='dynamic'))
+    teacher = db.relationship('TeacherInfo', backref='user', uselist=False,
+                              cascade="all, delete-orphan")
+    student = db.relationship('StudentInfo', backref='user', uselist=False,
+                              cascade="all, delete-orphan")
 
     def __init__(self, user_name, email, phone, password):
         self.name = user_name
@@ -74,6 +78,25 @@ class User(BaseModel, db.Model, UserMixin):
                 }
 
 
+class TeacherInfo(BaseModel, db.Model):
+    __tablename__ = 'teacher_info'
+    id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    school = db.Column(db.String(40))
+    major = db.Column(db.String(40))
+    detail = db.Column(db.String(1000))
+
+    def __init__(self, id, school, major, detail):
+        self.id = id
+        self.school = school
+        self.major = major
+        self.detail = detail
+
+
+class StudentInfo(BaseModel, db.Model):
+    __tablename__ = 'student_info'
+    id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+
+
 class UserDatastore(SQLAlchemyUserDatastore):
     def commit(self, **kwargs):
         try:
@@ -85,38 +108,14 @@ class UserDatastore(SQLAlchemyUserDatastore):
                 BaseResource.server_error(errorcode.DUPLICATE, **kwargs)
             BaseResource.server_error(errorcode.DATABASE_ERROR, **kwargs)
 
-    def get_users(self, user, page, page_size, status=None, parent_id=None, user_id=None, user_name=None,
-                  real_name=None, user_email=None, role_name=None, end_time=None, order_by=None, with_tenant=True):
+    def get_users(self, role_name, page, page_size):
         q = User.query.join(role_user_relationship, Role)
         try:
-            if user_id:
-                q = q.filter(User.id.like('%'+str(user_id)+'%'))
-            if user_name:
-                q = q.filter(User.name.like('%'+user_name+'%'))
-            if user_email:
-                q = q.filter(User.email.like('%'+user_email+'%'))
-            if real_name:
-                q = q.filter(User.real_name.like('%'+real_name+'%'))
-            if role_name:
-                q = q.filter(Role.name==role_name)
-            if status:
-                q = q.filter(User.status==status)
-            if end_time:
-                q = q.filter(User.end_time<=end_time)
-            if parent_id and user.has_role(RoleType.admin):
-                q = q.filter(or_(User.parent_id==parent_id, User.id==parent_id))
-                if parent_id == user.id and not with_tenant:
-                    q = q.filter(Role.name != RoleType.tenant)
-            if user.has_role(RoleType.tenant):
-                q = q.filter(or_(User.parent_id==user.id, User.id==user.id))
-            elif user.has_role(RoleType.normal):
-                q = q.filter(User.id==user.id)
+            q = q.filter(Role.name == role_name)
             total = q.count()
-            if order_by is None:
-                order_by = Role.id
-            pagination = q.order_by(order_by).paginate(page, page_size)
+            pagination = q.order_by(User.id).paginate(page, page_size)
             return total, pagination.items
-        except Exception, e:
+        except Exception as e:
             current_app.logger.error(e)
         return 0, []
 
