@@ -81,9 +81,8 @@ class User(BaseModel, db.Model, UserMixin):
 class TeacherInfo(BaseModel, db.Model):
     __tablename__ = 'teacher_info'
     id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
-    school = db.Column(db.String(40))
-    major = db.Column(db.String(40))
-    detail = db.Column(db.String(1000))
+    graduated = db.Column(db.String(1000))
+    introduce = db.Column(db.String(1000))
 
     def __init__(self, id, school, major, detail):
         self.id = id
@@ -95,6 +94,9 @@ class TeacherInfo(BaseModel, db.Model):
 class StudentInfo(BaseModel, db.Model):
     __tablename__ = 'student_info'
     id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+
+    def __init__(self, id):
+        self.id = id
 
 
 class UserDatastore(SQLAlchemyUserDatastore):

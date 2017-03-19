@@ -8,7 +8,7 @@ from flask.ext.security import login_user, logout_user, current_user, login_requ
     roles_required, roles_accepted
 from app import RoleType, errorcode
 from app.utils.api import BaseResource
-from .models import user_datastore, User, Role, or_
+from .models import user_datastore, User, StudentInfo, TeacherInfo, Role, or_
 from . import task
 from app.utils.validate import EmailParam, PhoneParam, DateParam, StringParam, ListParam, PasswordParm
 
@@ -63,23 +63,35 @@ class Account(BaseResource):
         login_user(user, True)
         user.last_login_time = datetime.now()
         user.save()
-        return user.to_dict()
+        return {
+            'id': user.id,
+            'user_name': user.name,
+            'role': user.roles[0].name,
+        }
 
     def signup(self):
+        """student signup"""
         parser = self.get_parser()
         parser.add_argument('email', type=EmailParam.check, required=True, location='json')
         parser.add_argument('phone', type=PhoneParam.check, required=True, location='json')
         parser.add_argument('user_name', type=StringParam.check, required=True, location='json', min=1, max=15)
         parser.add_argument('password', type=StringParam.check, required=True, location='json', min=1, max=15)
-        parser.add_argument('role', type=str, required=True, location='json',
-                            choices=(RoleType.teacher, RoleType.student))
-        self.get_param('user_name')
-        email, phone, user_name, password, role = \
-            self.get_params('email', 'phone', 'user_name', 'password', 'role')
-        password = hashlib.md5(password).hexdigest().upper()
-        user = User(user_name, email, phone, password)
-        user_datastore.add_role_to_user(user, role)
-        user_datastore.commit()
+        email, phone, user_name, password, = \
+            self.get_params('email', 'phone', 'user_name', 'password')
+        self._add_student(user_name, email, phone, password)
+        return self.ok('ok')
+
+    @roles_accepted(RoleType.admin)
+    def add_teacher(self):
+        parser = self.get_parser()
+        parser.add_argument('email', type=EmailParam.check, required=True, location='json')
+        parser.add_argument('phone', type=PhoneParam.check, required=True, location='json')
+        parser.add_argument('user_name', type=StringParam.check, required=True, location='json', min=1, max=15)
+        parser.add_argument('password', type=StringParam.check, required=False, location='json',
+                            default='12345678', min=1, max=15)
+        email, phone, user_name, password, = \
+            self.get_params('email', 'phone', 'user_name', 'password')
+        self._add_teacher(user_name, email, phone, password)
         return self.ok('ok')
 
     @login_required
@@ -112,7 +124,7 @@ class Account(BaseResource):
         user_id = self.get_param('user_id')
         user = current_user
         if user_id != current_user.id:
-            if current_user.has_role(RoleType.student):
+            if not current_user.has_role(RoleType.admin):
                 self.unauthorized(errorcode.UNAUTHORIZED)
             user = user_datastore.find_user(id=user_id)
             if not user:
@@ -191,6 +203,23 @@ class Account(BaseResource):
             'total': total,
             'items': items,
         }
+
+    def _add_student(self, user_name, email, phone, password):
+        password = hashlib.md5(password).hexdigest().upper()
+        user = User(user_name, email, phone, password)
+        student = StudentInfo(user.id)
+        user.student = student
+        user_datastore.add_role_to_user(user, RoleType.student)
+        user_datastore.commit()
+
+    def _add_teacher(self, user_name, email, phone, password):
+        password = hashlib.md5(password).hexdigest().upper()
+        user = User(user_name, email, phone, password)
+        teacher = TeacherInfo(user.id, '', '', '')
+        user.teacher = teacher
+        user_datastore.add_role_to_user(user, RoleType.teacher)
+        user_datastore.commit()
+
 
 
 

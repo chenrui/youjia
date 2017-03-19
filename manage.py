@@ -7,7 +7,7 @@ from app import commands, create_app
 
 
 if __name__ == "__main__":
-    server = Server(host="0.0.0.0", port=8080)
+    server = Server(host="0.0.0.0", port=80)
     app = create_app(config['default'])
     manager = Manager(app)
     manager.add_command("runserver", server)
