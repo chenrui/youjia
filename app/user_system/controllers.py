@@ -19,7 +19,7 @@ class Account(BaseResource):
     def user_loader(cls, user_id):
         return user_datastore.find_user(id=user_id)
 
-    def post(self, action):
+    def post(self, action=None):
         if action == 'login':
             return self.login()
         elif action == 'signup':
@@ -28,11 +28,9 @@ class Account(BaseResource):
             return self.upload_photo()
         elif action == 'profile':
             return self.set_profile()
-        elif action == 'delete':
-            return self.delete_user()
         self.bad_request(errorcode.BAD_REQUEST)
 
-    def get(self, action):
+    def get(self, action=None):
         if action == 'is_login':
             return self.is_login()
         elif action == 'logout':
@@ -42,6 +40,9 @@ class Account(BaseResource):
         elif action == 'profile':
             return self.get_profile()
         self.bad_request(errorcode.BAD_REQUEST)
+
+    def delete(self, action=None):
+        return self.delete_user()
 
     @login_required
     def is_login(self):
@@ -84,9 +85,8 @@ class Account(BaseResource):
         parser = self.get_parser()
         parser.add_argument('user_id', type=int, required=True, location='args')
         user = user_datastore.find_user(id=self.get_param('user_id'))
-        if not user:
-            self.bad_request(errorcode.NOT_FOUND)
-        user.delete()
+        if user:
+            user.delete()
         return self.ok('ok')
 
     @roles_accepted(RoleType.admin)

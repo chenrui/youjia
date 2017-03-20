@@ -6,15 +6,20 @@ from .models import CourseApply, Course
 
 
 class CourseResource(BaseResource):
-    def post(self, action):
+    def post(self, action=None):
         if action == 'apply':
             return self.add_source_apply()
+        elif action == 'add':
+            return self.add_course()
         self.bad_request(errorcode.BAD_REQUEST)
 
-    def get(self, action):
+    def get(self, action=None):
         if action == 'apply_info':
             return self.get_course_apply()
         self.bad_request(errorcode.BAD_REQUEST)
+
+    def delete(self, action=None):
+        return self.delete_course()
 
     def add_source_apply(self):
         parser = self.get_parser()
@@ -47,5 +52,19 @@ class CourseResource(BaseResource):
             'total': total,
             'items': datas,
         }
+
+    @roles_accepted(RoleType.admin)
+    def add_course(self):
+        return []
+
+    @roles_accepted(RoleType.admin)
+    def delete_course(self):
+        parser = self.get_parser()
+        parser.add_argument('course_id', type=int, required=True, location='args')
+        course = Course.get(id=self.get_param('course_id'))
+        if course:
+            course.delete()
+        return self.ok('ok')
+
 
 
