@@ -1,49 +1,70 @@
--- MySQL dump 10.13  Distrib 5.7.17, for macos10.12 (x86_64)
---
--- Host: 127.0.0.1    Database: worker
--- ------------------------------------------------------
--- Server version	5.7.17
+/*
+Navicat MySQL Data Transfer
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8 */;
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
-/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+Source Server         : local
+Source Server Version : 50630
+Source Host           : 192.168.25.131:3306
+Source Database       : worker
 
---
--- Table structure for table `alembic_version`
---
+Target Server Type    : MYSQL
+Target Server Version : 50630
+File Encoding         : 65001
 
+Date: 2017-03-20 14:51:43
+*/
+
+SET FOREIGN_KEY_CHECKS=0;
+
+-- ----------------------------
+-- Table structure for alembic_version
+-- ----------------------------
 DROP TABLE IF EXISTS `alembic_version`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `alembic_version` (
   `version_num` varchar(32) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Dumping data for table `alembic_version`
---
+-- ----------------------------
+-- Records of alembic_version
+-- ----------------------------
+INSERT INTO `alembic_version` VALUES ('66d4a2ce61fa');
 
-LOCK TABLES `alembic_version` WRITE;
-/*!40000 ALTER TABLE `alembic_version` DISABLE KEYS */;
-INSERT INTO `alembic_version` VALUES ('8d1092fd912c');
-/*!40000 ALTER TABLE `alembic_version` ENABLE KEYS */;
-UNLOCK TABLES;
+-- ----------------------------
+-- Table structure for course
+-- ----------------------------
+DROP TABLE IF EXISTS `course`;
+CREATE TABLE `course` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(20) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
---
--- Table structure for table `role`
---
+-- ----------------------------
+-- Records of course
+-- ----------------------------
 
+-- ----------------------------
+-- Table structure for course_apply
+-- ----------------------------
+DROP TABLE IF EXISTS `course_apply`;
+CREATE TABLE `course_apply` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `course_id` int(11) DEFAULT NULL,
+  `phone` varchar(16) DEFAULT NULL,
+  `create_time` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `course_id` (`course_id`),
+  CONSTRAINT `course_apply_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `course` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records of course_apply
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for role
+-- ----------------------------
 DROP TABLE IF EXISTS `role`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `role` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(80) DEFAULT NULL,
@@ -52,25 +73,18 @@ CREATE TABLE `role` (
   UNIQUE KEY `description` (`description`),
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Dumping data for table `role`
---
+-- ----------------------------
+-- Records of role
+-- ----------------------------
+INSERT INTO `role` VALUES ('1', 'admin', '管理员');
+INSERT INTO `role` VALUES ('2', 'teacher', '老师');
+INSERT INTO `role` VALUES ('3', 'student', '学生');
 
-LOCK TABLES `role` WRITE;
-/*!40000 ALTER TABLE `role` DISABLE KEYS */;
-INSERT INTO `role` VALUES (1,'admin','管理员'),(2,'teacher','老师'),(3,'student','学生');
-/*!40000 ALTER TABLE `role` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `role_user_relationship`
---
-
+-- ----------------------------
+-- Table structure for role_user_relationship
+-- ----------------------------
 DROP TABLE IF EXISTS `role_user_relationship`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `role_user_relationship` (
   `user_id` int(11) DEFAULT NULL,
   `role_id` int(11) DEFAULT NULL,
@@ -79,49 +93,41 @@ CREATE TABLE `role_user_relationship` (
   CONSTRAINT `role_user_relationship_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `role` (`id`),
   CONSTRAINT `role_user_relationship_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Dumping data for table `role_user_relationship`
---
+-- ----------------------------
+-- Records of role_user_relationship
+-- ----------------------------
+INSERT INTO `role_user_relationship` VALUES ('1000', '1');
+INSERT INTO `role_user_relationship` VALUES ('1001', '3');
 
-LOCK TABLES `role_user_relationship` WRITE;
-/*!40000 ALTER TABLE `role_user_relationship` DISABLE KEYS */;
-INSERT INTO `role_user_relationship` VALUES (1000,1),(1003,3);
-/*!40000 ALTER TABLE `role_user_relationship` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `student_info`
---
-
+-- ----------------------------
+-- Table structure for student_info
+-- ----------------------------
 DROP TABLE IF EXISTS `student_info`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `student_info` (
   `id` int(11) NOT NULL,
+  `user_name` varchar(20) DEFAULT NULL,
+  `first_name` varchar(10) DEFAULT NULL,
+  `second_name` varchar(10) DEFAULT NULL,
+  `sexual` varchar(10) DEFAULT NULL,
+  `birthday` date DEFAULT NULL,
+  `qq` varchar(20) DEFAULT NULL,
+  `skype` varchar(20) DEFAULT NULL,
+  `weichat` varchar(20) DEFAULT NULL,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `user_name` (`user_name`),
   CONSTRAINT `student_info_ibfk_1` FOREIGN KEY (`id`) REFERENCES `user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Dumping data for table `student_info`
---
+-- ----------------------------
+-- Records of student_info
+-- ----------------------------
+INSERT INTO `student_info` VALUES ('1001', '阿斯蒂芬', '斯', '地df方', '男', '1990-01-01', '', '', '');
 
-LOCK TABLES `student_info` WRITE;
-/*!40000 ALTER TABLE `student_info` DISABLE KEYS */;
-INSERT INTO `student_info` VALUES (1003);
-/*!40000 ALTER TABLE `student_info` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `teacher_info`
---
-
+-- ----------------------------
+-- Table structure for teacher_info
+-- ----------------------------
 DROP TABLE IF EXISTS `teacher_info`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `teacher_info` (
   `id` int(11) NOT NULL,
   `graduated` varchar(1000) DEFAULT NULL,
@@ -129,57 +135,30 @@ CREATE TABLE `teacher_info` (
   PRIMARY KEY (`id`),
   CONSTRAINT `teacher_info_ibfk_1` FOREIGN KEY (`id`) REFERENCES `user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Dumping data for table `teacher_info`
---
+-- ----------------------------
+-- Records of teacher_info
+-- ----------------------------
 
-LOCK TABLES `teacher_info` WRITE;
-/*!40000 ALTER TABLE `teacher_info` DISABLE KEYS */;
-/*!40000 ALTER TABLE `teacher_info` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `user`
---
-
+-- ----------------------------
+-- Table structure for user
+-- ----------------------------
 DROP TABLE IF EXISTS `user`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `user` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `email` varbinary(255) DEFAULT NULL,
   `phone` varchar(16) DEFAULT NULL,
-  `name` varchar(255) DEFAULT NULL,
-  `password` varchar(255) DEFAULT NULL,
+  `password` varchar(48) DEFAULT NULL,
+  `photo_path` varchar(255) DEFAULT NULL,
   `last_login_time` datetime DEFAULT NULL,
   `create_time` datetime DEFAULT NULL,
-  `photo_path` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`),
-  UNIQUE KEY `name` (`name`),
   UNIQUE KEY `phone` (`phone`)
-) ENGINE=InnoDB AUTO_INCREMENT=1004 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=InnoDB AUTO_INCREMENT=1002 DEFAULT CHARSET=utf8;
 
---
--- Dumping data for table `user`
---
-
-LOCK TABLES `user` WRITE;
-/*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES (1000,'superadmin@qq.com','13800138000','superadmin','E10ADC3949BA59ABBE56E057F20F883E','2017-03-19 21:15:12','2017-03-17 10:25:32','profile_photo\\1000-f43d079e0add11e79215005056c00008.jpg'),(1003,'test2@qq.com','13709065407','阿斯蒂芬','E10ADC3949BA59ABBE56E057F20F883E','2017-03-19 21:15:35','2017-03-19 21:15:35',NULL);
-/*!40000 ALTER TABLE `user` ENABLE KEYS */;
-UNLOCK TABLES;
-/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
-
-/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
-
--- Dump completed on 2017-03-19 21:26:47
+-- ----------------------------
+-- Records of user
+-- ----------------------------
+INSERT INTO `user` VALUES ('1000', 0x737570657261646D696E4071712E636F6D, '13800138000', 'E10ADC3949BA59ABBE56E057F20F883E', null, '2017-03-20 14:48:54', '2017-03-20 14:48:54');
+INSERT INTO `user` VALUES ('1001', 0x74657374324071712E636F6D, '13709065407', 'E10ADC3949BA59ABBE56E057F20F883E', null, '2017-03-20 14:50:08', '2017-03-20 14:50:08');

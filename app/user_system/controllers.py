@@ -27,7 +27,9 @@ class Account(BaseResource):
         elif action == 'photo':
             return self.upload_photo()
         elif action == 'profile':
-            return self.set_user_basic_info()
+            return self.set_profile()
+        elif action == 'delete':
+            return self.delete_user()
         self.bad_request(errorcode.BAD_REQUEST)
 
     def get(self, action):
@@ -38,10 +40,7 @@ class Account(BaseResource):
         elif action == 'photo':
             return self.get_photo()
         elif action == 'profile':
-            return self.get_user_basic_info()
-        self.bad_request(errorcode.BAD_REQUEST)
-
-    def put(self, action):
+            return self.get_profile()
         self.bad_request(errorcode.BAD_REQUEST)
 
     @login_required
@@ -65,7 +64,6 @@ class Account(BaseResource):
         user.save()
         return {
             'id': user.id,
-            'user_name': user.name,
             'role': user.roles[0].name,
         }
 
@@ -79,6 +77,16 @@ class Account(BaseResource):
         email, phone, user_name, password, = \
             self.get_params('email', 'phone', 'user_name', 'password')
         self._add_student(user_name, email, phone, password)
+        return self.ok('ok')
+
+    @roles_accepted(RoleType.admin)
+    def delete_user(self):
+        parser = self.get_parser()
+        parser.add_argument('user_id', type=int, required=True, location='args')
+        user = user_datastore.find_user(id=self.get_param('user_id'))
+        if not user:
+            self.bad_request(errorcode.NOT_FOUND)
+        user.delete()
         return self.ok('ok')
 
     @roles_accepted(RoleType.admin)
@@ -99,13 +107,12 @@ class Account(BaseResource):
         logout_user()
         return self.ok('ok')
 
-    @login_required
     def get_photo(self):
         parser = self.get_parser()
         parser.add_argument('user_id', type=int, required=True, location='args')
         user_id = self.get_param('user_id')
         user = current_user
-        if user_id != current_user.id:
+        if user_id != current_user.get_id():
             user = user_datastore.find_user(id=user_id)
             if not user:
                 self.bad_request(errorcode.NOT_FOUND)
@@ -120,7 +127,10 @@ class Account(BaseResource):
     def upload_photo(self):
         parser = self.get_parser()
         parser.add_argument('user_id', type=int, required=True, location='args')
-        file = request.files['file']
+        try:
+            file = request.files['file']
+        except:
+            self.bad_request(errorcode.BAD_REQUEST)
         user_id = self.get_param('user_id')
         user = current_user
         if user_id != current_user.id:
@@ -148,35 +158,34 @@ class Account(BaseResource):
         return self.ok('ok')
 
     @login_required
-    def set_user_basic_info(self):
+    def set_profile(self):
         parser = self.get_parser()
         parser.add_argument('user_id', type=int, required=True, location='args')
         user_id = self.get_param('user_id')
         user = current_user
         if user_id != current_user.id:
-            if current_user.has_role(RoleType.student):
-                self.unauthorized(errorcode.UNAUTHORIZED)
             user = user_datastore.find_user(id=user_id)
             if not user:
                 self.bad_request(errorcode.NOT_FOUND)
+        if user.has_role(RoleType.student):
+            return self._set_student_profile(parser, user)
+        elif user.has_role(RoleType.teacher):
+            pass
 
     @login_required
-    def get_user_basic_info(self):
+    def get_profile(self):
         parser = self.get_parser()
         parser.add_argument('user_id', type=int, required=True, location='args')
         user_id = self.get_param('user_id')
         user = current_user
         if user_id != current_user.id:
-            if current_user.has_role(RoleType.student):
-                self.unauthorized(errorcode.UNAUTHORIZED)
             user = user_datastore.find_user(id=user_id)
             if not user:
                 self.bad_request(errorcode.NOT_FOUND)
-        return {
-            'email': user.email,
-            'user_name': user.name,
-            'phone': user.phone,
-        }
+        if user.has_role(RoleType.student):
+            return self._get_student_profile(user)
+        elif user.has_role(RoleType.teacher):
+            pass
 
     @login_required
     def get_users(self):
@@ -206,19 +215,67 @@ class Account(BaseResource):
 
     def _add_student(self, user_name, email, phone, password):
         password = hashlib.md5(password).hexdigest().upper()
-        user = User(user_name, email, phone, password)
-        student = StudentInfo(user.id)
+        user = User(email, phone, password)
+        student = StudentInfo()
+        student.id = user.id
+        student.user_name = user_name
         user.student = student
         user_datastore.add_role_to_user(user, RoleType.student)
         user_datastore.commit()
+        return user
 
     def _add_teacher(self, user_name, email, phone, password):
         password = hashlib.md5(password).hexdigest().upper()
-        user = User(user_name, email, phone, password)
-        teacher = TeacherInfo(user.id, '', '', '')
+        user = User(email, phone, password)
+        teacher = TeacherInfo()
+        teacher.id = user.id
         user.teacher = teacher
         user_datastore.add_role_to_user(user, RoleType.teacher)
         user_datastore.commit()
+
+    def _get_student_profile(self, user):
+        profile = {
+            'id': user.id,
+            'email': user.email,
+            'phone': user.phone,
+            'user_name': user.student.user_name,
+            'first_name': user.student.first_name,
+            'second_name': user.student.second_name,
+            'sexual': user.student.sexual,
+            'birthday': '',
+            'qq': user.student.qq,
+            'skype': user.student.skype,
+            'weichat': user.student.weichat,
+        }
+        if user.student.birthday:
+            profile['birthday'] = user.student.birthday.strftime('%Y-%m-%d')
+        return profile
+
+    def _set_student_profile(self, parser, user):
+        if current_user.id != user.id and not current_user.has_role(RoleType.admin):
+            self.unauthorized(errorcode.UNAUTHORIZED)
+        parser.add_argument('first_name', type=StringParam.check, required=True, location='json', min=1, max=10)
+        parser.add_argument('second_name', type=StringParam.check, required=True, location='json', min=1, max=10)
+        parser.add_argument('user_name', type=StringParam.check, required=True, location='json', min=1, max=10)
+        parser.add_argument('email', type=EmailParam.check, required=True, location='json')
+        parser.add_argument('phone', type=PhoneParam.check, required=True, location='json')
+        parser.add_argument('sexual', type=unicode, required=True, location='json', choices=(u'男', u'女'))
+        parser.add_argument('birthday', type=DateParam.check, required=False, location='json')
+        parser.add_argument('qq', type=str, required=False, location='json', default='')
+        parser.add_argument('skype', type=str, required=False, location='json', default='')
+        parser.add_argument('weichat', type=str, required=False, location='json', default='')
+        user.email = self.get_param('email')
+        user.phone = self.get_param('phone')
+        user.student.user_name = self.get_param('user_name')
+        user.student.first_name = self.get_param('first_name')
+        user.student.second_name = self.get_param('second_name')
+        user.student.sexual = self.get_param('sexual')
+        user.student.birthday = self.get_param('birthday')
+        user.student.qq = self.get_param('qq')
+        user.student.skype = self.get_param('skype')
+        user.student.weichat = self.get_param('weichat')
+        user.save()
+        return self.ok('ok')
 
 
 

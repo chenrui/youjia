@@ -75,8 +75,6 @@ class StringParam(ParamValidation):
     type_str = 'string'
 
     def validate_value(self, value, args):
-        print value
-        print 'xxxxxxx'
         return validators.length(unicode(value), args.get('min', 0), args.get('max', sys.maxunicode))
 
     def get_err_msg(self):

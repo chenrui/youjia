@@ -27,8 +27,7 @@ class User(BaseModel, db.Model, UserMixin):
     __tablename__ = 'user'
     email = db.Column(db.VARBINARY(255), unique=True)
     phone = db.Column(db.String(16), unique=True)
-    name = db.Column(db.String(255), unique=True)
-    password = db.Column(db.String(255))
+    password = db.Column(db.String(48))
     photo_path = db.Column(db.String(255))
     last_login_time = db.Column(db.DateTime, default=datetime.now)
     create_time = db.Column(db.DateTime, default=datetime.now)
@@ -39,26 +38,10 @@ class User(BaseModel, db.Model, UserMixin):
     student = db.relationship('StudentInfo', backref='user', uselist=False,
                               cascade="all, delete-orphan")
 
-    def __init__(self, user_name, email, phone, password):
-        self.name = user_name
+    def __init__(self, email, phone, password):
         self.email = email
         self.phone = phone
         self.password = password
-
-    @classmethod
-    def get_all(cls, status, page, page_size, begin_time=None, end_time=None):
-        try:
-            q = cls.query.filter(cls.status==status)
-            if begin_time:
-                q = q.filter(User.begin_time==begin_time)
-            if end_time:
-                q = q.filter(User.end_time<end_time)
-            total = q.count()
-            pagination = q.order_by('id').paginate(page, page_size)
-            return total, pagination.items
-        except Exception, e:
-            current_app.logger.error(e)
-        return 0, []
 
     @property
     def is_active(self):
@@ -69,7 +52,6 @@ class User(BaseModel, db.Model, UserMixin):
 
     def to_dict(self):
         return {'id': self.id,
-                'user_name': self.name,
                 'email': self.email,
                 'phone': self.phone,
                 'role': self.roles[0].name,
@@ -84,19 +66,18 @@ class TeacherInfo(BaseModel, db.Model):
     graduated = db.Column(db.String(1000))
     introduce = db.Column(db.String(1000))
 
-    def __init__(self, id, school, major, detail):
-        self.id = id
-        self.school = school
-        self.major = major
-        self.detail = detail
-
 
 class StudentInfo(BaseModel, db.Model):
     __tablename__ = 'student_info'
     id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
-
-    def __init__(self, id):
-        self.id = id
+    user_name = db.Column(db.String(20), unique=True)
+    first_name = db.Column(db.String(10), default='')
+    second_name = db.Column(db.String(10), default='')
+    sexual = db.Column(db.String(10), default='')
+    birthday = db.Column(db.Date)
+    qq = db.Column(db.String(20), default='')
+    skype = db.Column(db.String(20), default='')
+    weichat = db.Column(db.String(20), default='')
 
 
 class UserDatastore(SQLAlchemyUserDatastore):

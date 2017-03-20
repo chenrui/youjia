@@ -125,7 +125,7 @@ class BaseResource(restful.Resource):
             'page', type=IntParam.check, required=False, location='args', default=1, min=1)
         parser.add_argument(
             'page_size', type=IntParam.check, required=False, location='args',
-            default=self.default_count, min=0, max=2000)
+            default=self.default_count, min=1, max=2000)
         return parser
 
     @classmethod

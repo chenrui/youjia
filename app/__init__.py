@@ -24,6 +24,8 @@ class RoleType(BaseEnum):
 def configure_blueprints(app):
     from .user_system.routers import app as user_system_app
     app.register_blueprint(user_system_app)
+    from .course.routers import app as course_app
+    app.register_blueprint(course_app)
 
 
 def configure_app(app, config):
