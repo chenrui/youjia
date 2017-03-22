@@ -2,7 +2,8 @@ from flask.ext.security import roles_accepted
 from app.utils.api import BaseResource
 from app.utils.validate import PhoneParam
 from app import errorcode, RoleType
-from .models import CourseApply, Course
+from .models import CourseApply, Course, CourseTable
+from app.user_system.models import User
 
 
 class CourseResource(BaseResource):
@@ -67,4 +68,25 @@ class CourseResource(BaseResource):
         return self.ok('ok')
 
 
+class CourseTB(BaseResource):
+    def post(self):
+        return self.add_course_table()
 
+    @roles_accepted(RoleType.admin)
+    def add_course_table(self):
+        parser = self.get_parser()
+        parser.add_argument('course_id', type=int, required=True, location='json')
+        parser.add_argument('teacher_user_id', type=int, required=True, location='json')
+        parser.add_argument('student_user_id', type=int, required=True, location='json')
+        # parser.add_argument('start_time', type=str, required=True, location='json')
+        # parser.add_argument('stop_time', type=str, required=True, location='json')
+        course_id, teacher_id, student_id = \
+            self.get_params('course_id', 'teacher_user_id', 'student_user_id')
+        if not Course.get(id=course_id) or not User.get(id=teacher_id) or not User.get(id=student_id):
+            self.bad_request(errorcode.BAD_REQUEST)
+        tb = CourseTable()
+        tb.course_id = course_id
+        tb.teacher_id = teacher_id
+        tb.student_id = student_id
+        tb.save()
+        return self.ok('ok')

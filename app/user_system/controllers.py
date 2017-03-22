@@ -8,7 +8,7 @@ from flask.ext.security import login_user, logout_user, current_user, login_requ
     roles_required, roles_accepted
 from app import RoleType, errorcode
 from app.utils.api import BaseResource
-from .models import user_datastore, User, StudentInfo, TeacherInfo, Role, or_
+from .models import user_datastore, User, StudentInfo, TeacherInfo
 from . import task
 from app.utils.validate import EmailParam, PhoneParam, DateParam, StringParam, ListParam, PasswordParm
 
@@ -28,6 +28,8 @@ class Account(BaseResource):
             return self.upload_photo()
         elif action == 'profile':
             return self.set_profile()
+        elif action == 'add_teacher':
+            return self.add_teacher()
         self.bad_request(errorcode.BAD_REQUEST)
 
     def get(self, action=None):
@@ -87,6 +89,11 @@ class Account(BaseResource):
         user = user_datastore.find_user(id=self.get_param('user_id'))
         if user:
             user.delete()
+            try:
+                if user.photo_path:
+                    os.remove(os.path.join(current_app.config['FILE_STORE_BASE'], user.photo_path))
+            except:
+                pass
         return self.ok('ok')
 
     @roles_accepted(RoleType.admin)
@@ -94,12 +101,11 @@ class Account(BaseResource):
         parser = self.get_parser()
         parser.add_argument('email', type=EmailParam.check, required=True, location='json')
         parser.add_argument('phone', type=PhoneParam.check, required=True, location='json')
-        parser.add_argument('user_name', type=StringParam.check, required=True, location='json', min=1, max=15)
         parser.add_argument('password', type=StringParam.check, required=False, location='json',
                             default='12345678', min=1, max=15)
-        email, phone, user_name, password, = \
-            self.get_params('email', 'phone', 'user_name', 'password')
-        self._add_teacher(user_name, email, phone, password)
+        email, phone, password, = \
+            self.get_params('email', 'phone', 'password')
+        self._add_teacher(email, phone, password)
         return self.ok('ok')
 
     @login_required
@@ -224,7 +230,7 @@ class Account(BaseResource):
         user_datastore.commit()
         return user
 
-    def _add_teacher(self, user_name, email, phone, password):
+    def _add_teacher(self, email, phone, password):
         password = hashlib.md5(password).hexdigest().upper()
         user = User(email, phone, password)
         teacher = TeacherInfo()

@@ -1,6 +1,5 @@
 # -*- coding:utf-8 -*-
 from datetime import datetime
-from sqlalchemy import or_
 from flask import current_app
 from flask.ext.security import UserMixin, RoleMixin, SQLAlchemyUserDatastore
 from app.database import db, BaseModel
@@ -50,21 +49,13 @@ class User(BaseModel, db.Model, UserMixin):
     def get_id(self):
         return self.id
 
-    def to_dict(self):
-        return {'id': self.id,
-                'email': self.email,
-                'phone': self.phone,
-                'role': self.roles[0].name,
-                'last_login_time': self.last_login_time.strftime('%Y-%m-%d %H:%M:%S'),
-                'create_time': self.create_time.strftime('%Y-%m-%d %H:%M:%S')
-                }
-
 
 class TeacherInfo(BaseModel, db.Model):
     __tablename__ = 'teacher_info'
     id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
     graduated = db.Column(db.String(1000))
     introduce = db.Column(db.String(1000))
+    course_tables = db.relationship('CourseTable', backref='teacher_info', cascade="all, delete-orphan")
 
 
 class StudentInfo(BaseModel, db.Model):
@@ -78,6 +69,7 @@ class StudentInfo(BaseModel, db.Model):
     qq = db.Column(db.String(20), default='')
     skype = db.Column(db.String(20), default='')
     weichat = db.Column(db.String(20), default='')
+    course_tables = db.relationship('CourseTable', backref='student_info', cascade="all, delete-orphan")
 
 
 class UserDatastore(SQLAlchemyUserDatastore):
@@ -102,32 +94,5 @@ class UserDatastore(SQLAlchemyUserDatastore):
             current_app.logger.error(e)
         return 0, []
 
-    def get_users_by_role(self, role, exclude, page, page_size):
-        try:
-            q = User.query.join(role_user_relationship, Role)
-            if role:
-                q = q.filter(Role.name==role)
-            if exclude:
-                q = q.filter(Role.name!=exclude)
-            total = q.count()
-            pagination = q.order_by('user_id').paginate(page, page_size)
-            return total, pagination.items
-        except Exception, e:
-            current_app.logger.error(e)
-        return 0, []
-
-    def get_children(self, parent_id, page, page_size, status=None, exclude=None):
-        try:
-            q = User.query.filter(or_(User.id==parent_id, User.parent_id==parent_id))
-            if status:
-                q = q.filter_by(status=status)
-            if exclude:
-                q = q.filter(User.status!=exclude)
-            total = q.count()
-            pagination = q.order_by(User.id).paginate(page, page_size)
-            return total, pagination.items
-        except Exception, e:
-            current_app.logger.error(e)
-        return 0, []
 
 user_datastore = UserDatastore(db, User, Role)

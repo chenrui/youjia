@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50630
 File Encoding         : 65001
 
-Date: 2017-03-20 14:51:43
+Date: 2017-03-22 12:45:12
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -26,7 +26,7 @@ CREATE TABLE `alembic_version` (
 -- ----------------------------
 -- Records of alembic_version
 -- ----------------------------
-INSERT INTO `alembic_version` VALUES ('66d4a2ce61fa');
+INSERT INTO `alembic_version` VALUES ('b1c7a7cf51fd');
 
 -- ----------------------------
 -- Table structure for course
@@ -37,11 +37,12 @@ CREATE TABLE `course` (
   `name` varchar(20) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of course
 -- ----------------------------
+INSERT INTO `course` VALUES ('1', '托福');
 
 -- ----------------------------
 -- Table structure for course_apply
@@ -55,10 +56,35 @@ CREATE TABLE `course_apply` (
   PRIMARY KEY (`id`),
   KEY `course_id` (`course_id`),
   CONSTRAINT `course_apply_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `course` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of course_apply
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for course_talbe
+-- ----------------------------
+DROP TABLE IF EXISTS `course_talbe`;
+CREATE TABLE `course_talbe` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `course_id` int(11) DEFAULT NULL,
+  `teacher_id` int(11) DEFAULT NULL,
+  `student_id` int(11) DEFAULT NULL,
+  `start_time` datetime DEFAULT NULL,
+  `stop_time` datetime DEFAULT NULL,
+  `create_time` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `course_id` (`course_id`),
+  KEY `student_id` (`student_id`),
+  KEY `teacher_id` (`teacher_id`),
+  CONSTRAINT `course_talbe_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `course` (`id`),
+  CONSTRAINT `course_talbe_ibfk_2` FOREIGN KEY (`student_id`) REFERENCES `student_info` (`id`),
+  CONSTRAINT `course_talbe_ibfk_3` FOREIGN KEY (`teacher_id`) REFERENCES `teacher_info` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records of course_talbe
 -- ----------------------------
 
 -- ----------------------------
@@ -99,6 +125,7 @@ CREATE TABLE `role_user_relationship` (
 -- ----------------------------
 INSERT INTO `role_user_relationship` VALUES ('1000', '1');
 INSERT INTO `role_user_relationship` VALUES ('1001', '3');
+INSERT INTO `role_user_relationship` VALUES ('1003', '2');
 
 -- ----------------------------
 -- Table structure for student_info
@@ -139,6 +166,7 @@ CREATE TABLE `teacher_info` (
 -- ----------------------------
 -- Records of teacher_info
 -- ----------------------------
+INSERT INTO `teacher_info` VALUES ('1003', null, null);
 
 -- ----------------------------
 -- Table structure for user
@@ -155,10 +183,11 @@ CREATE TABLE `user` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`),
   UNIQUE KEY `phone` (`phone`)
-) ENGINE=InnoDB AUTO_INCREMENT=1002 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1004 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of user
 -- ----------------------------
 INSERT INTO `user` VALUES ('1000', 0x737570657261646D696E4071712E636F6D, '13800138000', 'E10ADC3949BA59ABBE56E057F20F883E', null, '2017-03-20 14:48:54', '2017-03-20 14:48:54');
 INSERT INTO `user` VALUES ('1001', 0x74657374324071712E636F6D, '13709065407', 'E10ADC3949BA59ABBE56E057F20F883E', null, '2017-03-20 14:50:08', '2017-03-20 14:50:08');
+INSERT INTO `user` VALUES ('1003', 0x74657374334071712E636F6D, '13709065400', 'E10ADC3949BA59ABBE56E057F20F883E', null, '2017-03-22 10:59:34', '2017-03-22 10:59:34');
