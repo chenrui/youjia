@@ -69,8 +69,11 @@ class CourseResource(BaseResource):
 
 
 class CourseTB(BaseResource):
-    def post(self):
+    def post(self, action=None):
         return self.add_course_table()
+
+    def get(self, action=None):
+        pass
 
     @roles_accepted(RoleType.admin)
     def add_course_table(self):
@@ -90,3 +93,6 @@ class CourseTB(BaseResource):
         tb.student_id = student_id
         tb.save()
         return self.ok('ok')
+
+    def _get_available_users(self, start, stop):
+        pass

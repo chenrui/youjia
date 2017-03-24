@@ -8,7 +8,7 @@ from flask_restful.representations.json import output_json
 
 RESOURCES = (
     [CourseResource, '/api/course', '/api/course/<string:action>'],
-    [CourseTB, '/api/coursetable'],
+    [CourseTB, '/api/coursetable', '/api/coursetable/<string:action>'],
 )
 
 api = RestfulApi(app, default_mediatype='application/json; charset=UTF-8')

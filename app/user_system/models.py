@@ -41,6 +41,7 @@ class User(BaseModel, db.Model, UserMixin):
         self.email = email
         self.phone = phone
         self.password = password
+        self.photo_path = ''
 
     @property
     def is_active(self):
