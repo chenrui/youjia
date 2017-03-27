@@ -28,6 +28,7 @@ class User(BaseModel, db.Model, UserMixin):
     phone = db.Column(db.String(16), unique=True)
     password = db.Column(db.String(48))
     photo_path = db.Column(db.String(255))
+    # status = db.Column(db.String(10))
     last_login_time = db.Column(db.DateTime, default=datetime.now)
     create_time = db.Column(db.DateTime, default=datetime.now)
     roles = db.relationship('Role', secondary=role_user_relationship,
@@ -42,6 +43,7 @@ class User(BaseModel, db.Model, UserMixin):
         self.phone = phone
         self.password = password
         self.photo_path = ''
+        # self.status = 'enabled'
 
     @property
     def is_active(self):

@@ -22,14 +22,14 @@ class Account(BaseResource):
     def post(self, action=None):
         if action == 'login':
             return self.login()
-        elif action == 'signup':
-            return self.signup()
         elif action == 'photo':
             return self.upload_photo()
         elif action == 'profile':
             return self.set_profile()
         elif action == 'add_teacher':
             return self.add_teacher()
+        elif action == 'add_student':
+            return self.add_student()
         self.bad_request(errorcode.BAD_REQUEST)
 
     def get(self, action=None):
@@ -70,18 +70,6 @@ class Account(BaseResource):
             'role': user.roles[0].name,
         }
 
-    def signup(self):
-        """student signup"""
-        parser = self.get_parser()
-        parser.add_argument('email', type=EmailParam.check, required=True, location='json')
-        parser.add_argument('phone', type=PhoneParam.check, required=True, location='json')
-        parser.add_argument('user_name', type=StringParam.check, required=True, location='json', min=1, max=15)
-        parser.add_argument('password', type=StringParam.check, required=True, location='json', min=1, max=15)
-        email, phone, user_name, password, = \
-            self.get_params('email', 'phone', 'user_name', 'password')
-        self._add_student(user_name, email, phone, password)
-        return self.ok('ok')
-
     @roles_accepted(RoleType.admin)
     def delete_user(self):
         parser = self.get_parser()
@@ -105,8 +93,19 @@ class Account(BaseResource):
                             default='12345678', min=1, max=15)
         email, phone, password, = \
             self.get_params('email', 'phone', 'password')
-        self._add_teacher(email, phone, password)
-        return self.ok('ok')
+        user = self._add_teacher(email, phone, password)
+        return self._set_teacher_profile(parser, user)
+
+    @roles_accepted(RoleType.admin)
+    def add_student(self):
+        parser = self.get_parser()
+        parser.add_argument('email', type=EmailParam.check, required=True, location='json')
+        parser.add_argument('phone', type=PhoneParam.check, required=True, location='json')
+        parser.add_argument('password', type=StringParam.check, required=False, location='json',
+                            default='12345678', min=1, max=15)
+        email, phone, password, = self.get_params('email', 'phone', 'password')
+        user = self._add_student(email, phone, password)
+        return self._set_student_profile(parser, user)
 
     @login_required
     def logout(self):
@@ -176,7 +175,7 @@ class Account(BaseResource):
         if user.has_role(RoleType.student):
             return self._set_student_profile(parser, user)
         elif user.has_role(RoleType.teacher):
-            pass
+            return self._set_teacher_profile(parser, user)
 
     @login_required
     def get_profile(self):
@@ -219,15 +218,13 @@ class Account(BaseResource):
             'items': items,
         }
 
-    def _add_student(self, user_name, email, phone, password):
+    def _add_student(self, email, phone, password):
         password = hashlib.md5(password).hexdigest().upper()
         user = User(email, phone, password)
         student = StudentInfo()
         student.id = user.id
-        student.user_name = user_name
         user.student = student
         user_datastore.add_role_to_user(user, RoleType.student)
-        user_datastore.commit()
         return user
 
     def _add_teacher(self, email, phone, password):
@@ -237,7 +234,7 @@ class Account(BaseResource):
         teacher.id = user.id
         user.teacher = teacher
         user_datastore.add_role_to_user(user, RoleType.teacher)
-        user_datastore.commit()
+        return user
 
     def _get_student_profile(self, user):
         profile = {
@@ -280,6 +277,12 @@ class Account(BaseResource):
         user.student.qq = self.get_param('qq')
         user.student.skype = self.get_param('skype')
         user.student.weichat = self.get_param('weichat')
+        user.save()
+        return self.ok('ok')
+
+    def _set_teacher_profile(self, parser, user):
+        if current_user.id != user.id and not current_user.has_role(RoleType.admin):
+            self.unauthorized(errorcode.UNAUTHORIZED)
         user.save()
         return self.ok('ok')
 

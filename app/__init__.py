@@ -26,6 +26,8 @@ def configure_blueprints(app):
     app.register_blueprint(user_system_app)
     from .course.routers import app as course_app
     app.register_blueprint(course_app)
+    from .success_case.routers import app as case_app
+    app.register_blueprint(case_app)
 
 
 def configure_app(app, config):

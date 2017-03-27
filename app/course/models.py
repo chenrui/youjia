@@ -11,13 +11,11 @@ class Course(BaseModel, db.Model):
     __tablename__ = 'course'
     name = db.Column(db.String(20), unique=True)
 
-    applies = db.relationship('CourseApply', backref='course', cascade="all, delete-orphan")
     tables = db.relationship('CourseTable', backref='course', cascade="all, delete-orphan")
 
 
 class CourseApply(BaseModel, db.Model):
     __tablename__ = 'course_apply'
-    course_id = db.Column(db.Integer, db.ForeignKey('course.id'))
     phone = db.Column(db.String(16))
     create_time = db.Column(db.DateTime, default=datetime.now)
 
@@ -38,6 +36,6 @@ class CourseTable(BaseModel, db.Model):
     course_id = db.Column(db.Integer, db.ForeignKey('course.id'))
     teacher_id = db.Column(db.Integer, db.ForeignKey('teacher_info.id'))
     student_id = db.Column(db.Integer, db.ForeignKey('student_info.id'))
-    start_time = db.Column(db.DateTime)
-    stop_time = db.Column(db.DateTime)
-    create_time = db.Column(db.DateTime, default=datetime.now)
+    day = db.Column(db.Integer)
+    start_time = db.Column(db.Integer)
+    stop_time = db.Column(db.Integer)
