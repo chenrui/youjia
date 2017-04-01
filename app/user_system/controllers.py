@@ -4,13 +4,11 @@ import os.path
 import uuid
 from datetime import datetime, date, timedelta
 from flask import current_app, request, Response
-from flask.ext.security import login_user, logout_user, current_user, login_required, \
-    roles_required, roles_accepted
+from flask.ext.security import login_user, logout_user, current_user, login_required, roles_accepted
 from app import RoleType, errorcode
 from app.utils.api import BaseResource
 from .models import user_datastore, User, StudentInfo, TeacherInfo
-from . import task
-from app.utils.validate import EmailParam, PhoneParam, DateParam, StringParam, ListParam
+from app.utils.validate import PhoneParam, DateParam, StringParam
 
 
 class Account(BaseResource):
@@ -450,5 +448,7 @@ class File(Account):
         user.student.admission_school = self.get_param('admission_school')
         user.student.admission_major = self.get_param('admission_major', '')
         user.save()
+        from app.course.models import CourseTable
+        CourseTable.delete_all([tb.id for tb in user.student.course_tables])
         return self.ok('ok')
 

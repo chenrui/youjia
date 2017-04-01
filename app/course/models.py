@@ -3,8 +3,6 @@ from datetime import datetime
 from sqlalchemy import or_
 from flask import current_app
 from app.database import db, BaseModel
-from app import RoleType, errorcode
-from app.utils.api import BaseResource
 
 
 class Course(BaseModel, db.Model):
@@ -39,3 +37,17 @@ class CourseTable(BaseModel, db.Model):
     day = db.Column(db.Integer)
     start_time = db.Column(db.Integer)
     stop_time = db.Column(db.Integer)
+
+    @classmethod
+    def delete_all(cls, ids):
+        conn = db.engine.connect()
+        try:
+            with conn.begin():
+                conn.execute('delete from %s where `id` in (%s)' % (
+                    CourseTable.__tablename__,
+                    ','.join(map(lambda x: str(x), ids))))
+        except Exception, e:
+            current_app.logger.error(e)
+            return False
+
+        return True
