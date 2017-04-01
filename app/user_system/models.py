@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 from datetime import datetime
+from sqlalchemy import or_
 from flask import current_app
 from flask.ext.security import UserMixin, RoleMixin, SQLAlchemyUserDatastore
 from app.database import db, BaseModel
@@ -24,13 +25,15 @@ class Role(BaseModel, db.Model, RoleMixin):
 
 class User(BaseModel, db.Model, UserMixin):
     __tablename__ = 'user'
-    email = db.Column(db.VARBINARY(255), unique=True)
     phone = db.Column(db.String(16), unique=True)
     password = db.Column(db.String(48))
+    chinese_name = db.Column(db.String(20))
+    english_name = db.Column(db.String(20))
     photo_path = db.Column(db.String(255))
-    # status = db.Column(db.String(10))
-    last_login_time = db.Column(db.DateTime, default=datetime.now)
+    update_time = db.Column(db.DateTime, default=datetime.now)
     create_time = db.Column(db.DateTime, default=datetime.now)
+    verify_token = db.Column(db.String(32), default='')
+    status = db.Column(db.String(10))
     roles = db.relationship('Role', secondary=role_user_relationship,
                             backref=db.backref('users', lazy='dynamic'))
     teacher = db.relationship('TeacherInfo', backref='user', uselist=False,
@@ -38,12 +41,13 @@ class User(BaseModel, db.Model, UserMixin):
     student = db.relationship('StudentInfo', backref='user', uselist=False,
                               cascade="all, delete-orphan")
 
-    def __init__(self, email, phone, password):
-        self.email = email
+    def __init__(self, chinese_name='', englisth_name='', phone='', password=''):
+        self.chinese_name = chinese_name
+        self.english_name = englisth_name
         self.phone = phone
         self.password = password
         self.photo_path = ''
-        # self.status = 'enabled'
+        self.status = 'enabled'
 
     @property
     def is_active(self):
@@ -56,22 +60,50 @@ class User(BaseModel, db.Model, UserMixin):
 class TeacherInfo(BaseModel, db.Model):
     __tablename__ = 'teacher_info'
     id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
-    graduated = db.Column(db.String(1000))
-    introduce = db.Column(db.String(1000))
+    # 毕业学校
+    graduated = db.Column(db.String(20))
+    # 专业
+    major = db.Column(db.String(20))
+    country = db.Column(db.String(10))
+    weichat = db.Column(db.String(20))
+    introduce = db.Column(db.String(200))
+    success_case = db.Column(db.String(200))
+    feature = db.Column(db.String(500))
+
     course_tables = db.relationship('CourseTable', backref='teacher_info', cascade="all, delete-orphan")
 
 
 class StudentInfo(BaseModel, db.Model):
     __tablename__ = 'student_info'
     id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
-    user_name = db.Column(db.String(20), unique=True)
-    first_name = db.Column(db.String(10), default='')
-    second_name = db.Column(db.String(10), default='')
     sexual = db.Column(db.String(10), default='')
-    birthday = db.Column(db.Date)
-    qq = db.Column(db.String(20), default='')
-    skype = db.Column(db.String(20), default='')
-    weichat = db.Column(db.String(20), default='')
+    location = db.Column(db.String(10))
+    age = db.Column(db.String(5), default='')
+    school = db.Column(db.String(20))
+    grade = db.Column(db.String(20))
+    study_country = db.Column(db.String(10))
+    enrollment_time = db.Column(db.String(10), default='')
+    major = db.Column(db.String(20))
+    course_name = db.Column(db.String(20))
+    learn_range = db.Column(db.String(40))
+    weichat = db.Column(db.String(20))
+    parent_phone = db.Column(db.String(16))
+    remark = db.Column(db.String(100), default='')
+
+    # file
+    test1 = db.Column(db.String(20), default='')
+    score1 = db.Column(db.String(10), default='')
+    test2 = db.Column(db.String(20), default='')
+    score2 = db.Column(db.String(10), default='')
+    test3 = db.Column(db.String(20), default='')
+    score3 = db.Column(db.String(10), default='')
+    test4 = db.Column(db.String(20), default='')
+    score4 = db.Column(db.String(10), default='')
+    test5 = db.Column(db.String(20), default='')
+    score5 = db.Column(db.String(10), default='')
+    admission_school = db.Column(db.String(20), default='')
+    admission_major = db.Column(db.String(20), default='')
+
     course_tables = db.relationship('CourseTable', backref='student_info', cascade="all, delete-orphan")
 
 
@@ -86,12 +118,18 @@ class UserDatastore(SQLAlchemyUserDatastore):
                 BaseResource.server_error(errorcode.DUPLICATE, **kwargs)
             BaseResource.server_error(errorcode.DATABASE_ERROR, **kwargs)
 
-    def get_users(self, role_name, page, page_size):
+    def get_users(self, role_name, page, page_size, status=None, key=None):
         q = User.query.join(role_user_relationship, Role)
         try:
             q = q.filter(Role.name == role_name)
+            if status:
+                q = q.filter(User.status == status)
+            if key:
+                q = q.filter(or_(User.phone.like('%'+key+'%'),
+                                 User.chinese_name.like('%'+key+'%'),
+                                 User.english_name.like('%'+key+'%')))
             total = q.count()
-            pagination = q.order_by(User.id).paginate(page, page_size)
+            pagination = q.order_by(User.update_time.desc()).paginate(page, page_size)
             return total, pagination.items
         except Exception as e:
             current_app.logger.error(e)

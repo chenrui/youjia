@@ -27,7 +27,7 @@ class InitData(Command):
 
     def run(self):
         self.add_role()
-        self.add_admin('13800138000', 'superadmin@qq.com', '123456', 1000)
+        self.add_admin('系统管理员', 'superadmin', '13800138000', '123456', 1000)
 
     def add_role(self):
         user_datastore.create_role(name=RoleType.admin, description='管理员')
@@ -35,9 +35,9 @@ class InitData(Command):
         user_datastore.create_role(name=RoleType.student, description='学生')
         user_datastore.commit()
 
-    def add_admin(self, phone, email, password, uid=None):
+    def add_admin(self, chinese_name, englisth_name, phone, password, uid=None):
         password = hashlib.md5(password).hexdigest().upper()
-        user = User(email, phone, password)
+        user = User(chinese_name, englisth_name, phone, password)
         if uid:
             user.id = uid
         user_datastore.add_role_to_user(user, RoleType.admin)
