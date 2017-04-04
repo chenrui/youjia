@@ -8,7 +8,7 @@ from flask.ext.security import login_user, logout_user, current_user, login_requ
 from app import RoleType, errorcode
 from app.utils.api import BaseResource
 from .models import user_datastore, User, StudentInfo, TeacherInfo
-from app.utils.validate import PhoneParam, DateParam, StringParam
+from app.utils.validate import PhoneParam, DateParam, StringParam, ListParam
 
 
 class Account(BaseResource):
@@ -66,7 +66,7 @@ class Account(BaseResource):
         phone, password = self.get_params('phone', 'password')
         password = hashlib.md5(password).hexdigest().upper()
         user = user_datastore.find_user(phone=phone)
-        if not user or user.password != password:
+        if not user or user.password != password or user.has_role(RoleType.teacher):
             self.bad_request(errorcode.INVALID_USER)
         login_user(user, True)
         user.last_login_time = datetime.now()
@@ -239,11 +239,14 @@ class Account(BaseResource):
         parser = self.get_parser()
         self.add_pagination_args(parser)
         parser.add_argument('key', type=StringParam.check, required=False, location='args', min=1, max=20)
-        page, page_size = self.get_params('page', 'page_size')
-        total, users = user_datastore.get_users(role_name, page, page_size, status, self.get_param('key'))
+        parser.add_argument('show', type=str, required=False, location='args', default='false')
+        page, page_size, key = self.get_params('page', 'page_size', 'key')
+        show = self.get_param('show') == 'true'
+        total, users = user_datastore.get_users(role_name, page, page_size, status, key, show)
         items = []
         if role_name == RoleType.teacher:
             for user in users:
+                phone = user.phone if len(user.phone) != 32 else ''
                 info = {
                     'id': user.id,
                     'chinese_name': user.chinese_name,
@@ -251,7 +254,7 @@ class Account(BaseResource):
                     'graduated': user.teacher.graduated,
                     'major': user.teacher.major,
                     'country': user.teacher.country,
-                    'phone': user.phone,
+                    'phone': phone,
                     'update_time': user.update_time.strftime('%Y-%m-%d %H:%M:%S'),
                 }
                 items.append(info)
@@ -298,9 +301,10 @@ class Account(BaseResource):
         }
 
     def _get_teacher_profile(self, user):
+        phone = user.phone if len(user.phone) != 32 else ''
         return {
             'id': user.id,
-            'phone': user.phone,
+            'phone': phone,
             'chinese_name': user.chinese_name,
             'english_name': user.english_name,
             'graduated': user.teacher.graduated,
@@ -323,7 +327,7 @@ class Account(BaseResource):
         parser.add_argument('study_country', type=StringParam.check, required=True, location='json', min=1, max=10)
         parser.add_argument('enrollment_time', type=DateParam.check, required=False, location='json')
         parser.add_argument('major', type=StringParam.check, required=False, location='json', min=1, max=20)
-        parser.add_argument('course_name', type=StringParam.check, required=True, location='json')
+        parser.add_argument('course_name', type=StringParam.check, required=True, location='json', min=1, max=20)
         parser.add_argument('learn_range', type=StringParam.check, required=True, location='json', min=1, max=40)
         parser.add_argument('wechat', type=StringParam.check, required=True, location='json', min=1, max=20)
         parser.add_argument('phone', type=PhoneParam.check, required=True, location='json')
@@ -357,13 +361,15 @@ class Account(BaseResource):
         parser.add_argument('graduated', type=StringParam.check, required=True, location='json', min=1, max=20)
         parser.add_argument('major', type=StringParam.check, required=True, location='json', min=1, max=20)
         parser.add_argument('country', type=StringParam.check, required=True, location='json', min=1, max=20)
-        parser.add_argument('phone', type=PhoneParam.check, required=True, location='json')
-        parser.add_argument('wechat', type=StringParam.check, required=True, location='json', min=1, max=20)
+        parser.add_argument('phone', type=PhoneParam.check, required=False, location='json')
+        parser.add_argument('wechat', type=StringParam.check, required=False, location='json', min=1, max=20)
         parser.add_argument('introduce', type=StringParam.check, required=True, location='json', min=1, max=200)
         parser.add_argument('success_case', type=StringParam.check, required=True, location='json', min=1, max=200)
         parser.add_argument('feature', type=StringParam.check, required=True, location='json', min=1, max=500)
+        parser.add_argument('show', type=bool, required=True, location='json')
 
-        user.phone = self.get_param('phone')
+        phone = self.get_param('phone')
+        user.phone = phone if phone else uuid.uuid1().get_hex()
         user.chinese_name = self.get_param('chinese_name')
         user.english_name = self.get_param('english_name')
         user.teacher.graduated = self.get_param('graduated')
@@ -373,24 +379,26 @@ class Account(BaseResource):
         user.teacher.introduce = self.get_param('introduce')
         user.teacher.success_case = self.get_param('success_case')
         user.teacher.feature = self.get_param('feature')
+        user.teacher.show = self.get_param('show')
         if user.password == '':
             user.password = hashlib.md5(user.english_name + '2017').hexdigest().upper()
         user.save()
         return self.ok('ok')
 
 
-class File(Account):
+class History(Account):
+
+    @roles_accepted(RoleType.admin)
     def post(self, action=None):
         return self.file_student()
 
-    def get(self, action=None):
-        if action is None:
-            return self.get_users(RoleType.student, 'filed')
-        elif action == 'profile':
-            return self.get_profile()
-        self.bad_request(errorcode.BAD_REQUEST)
-
     @roles_accepted(RoleType.admin)
+    def get(self, action=None):
+        if request.args and 'user_id' in request.args:
+            return self.get_profile()
+        else:
+            return self.get_users(RoleType.student, 'filed')
+
     def get_profile(self):
         parser = self.get_parser()
         parser.add_argument('user_id', type=int, required=True, location='args')
@@ -413,7 +421,6 @@ class File(Account):
         data['admission_major'] = user.student.admission_major
         return data
 
-    @roles_accepted(RoleType.admin)
     def file_student(self):
         parser = self.get_parser()
         parser.add_argument('user_id', type=int, required=True, location='args')

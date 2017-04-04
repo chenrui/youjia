@@ -5,13 +5,6 @@ from flask import current_app
 from app.database import db, BaseModel
 
 
-class Course(BaseModel, db.Model):
-    __tablename__ = 'course'
-    name = db.Column(db.String(20), unique=True)
-
-    tables = db.relationship('CourseTable', backref='course', cascade="all, delete-orphan")
-
-
 class CourseApply(BaseModel, db.Model):
     __tablename__ = 'course_apply'
     phone = db.Column(db.String(16))
@@ -31,12 +24,23 @@ class CourseApply(BaseModel, db.Model):
 
 class CourseTable(BaseModel, db.Model):
     __tablename__ = 'course_talbe'
-    course_id = db.Column(db.Integer, db.ForeignKey('course.id'))
+    course_name = db.Column(db.String(20))
     teacher_id = db.Column(db.Integer, db.ForeignKey('teacher_info.id'))
     student_id = db.Column(db.Integer, db.ForeignKey('student_info.id'))
     day = db.Column(db.Integer)
-    start_time = db.Column(db.Integer)
-    stop_time = db.Column(db.Integer)
+    start_time = db.Column(db.String(10))
+    stop_time = db.Column(db.String(10))
+    time_type = db.Column(db.Integer)
+    update_time = db.Column(db.DateTime, default=datetime.now)
+
+    @classmethod
+    def get_all(cls, student_id=None, teacher_id=None):
+        q = cls.query
+        if student_id:
+            q = q.filter_by(student_id=student_id)
+        else:
+            q = q.filter_by(teacher_id=teacher_id)
+        return q.order_by(cls.day, cls.time_type).all()
 
     @classmethod
     def delete_all(cls, ids):
@@ -51,3 +55,18 @@ class CourseTable(BaseModel, db.Model):
             return False
 
         return True
+
+
+class StudyFeedback(BaseModel, db.Model):
+    __tablename__ = 'study_feedback'
+    student_id = db.Column(db.Integer, db.ForeignKey('student_info.id'))
+    chinese_name = db.Column(db.String(20))
+    study_date = db.Column(db.String(10))
+    class_time = db.Column(db.String(30))
+    study_time = db.Column(db.String(30))
+    course_name = db.Column(db.String(20))
+    section = db.Column(db.String(20))
+    contents = db.Column(db.String(50))
+    homework = db.Column(db.String(75))
+    feedback = db.Column(db.String(125))
+    update_time = db.Column(db.DateTime, default=datetime.now)

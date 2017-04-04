@@ -7,7 +7,7 @@ from flask_restful.representations.json import output_json
 
 
 RESOURCES = (
-    [Case, '/api/success_case'],
+    [Case, '/api/success_case', '/api/success_case/<string:action>'],
 )
 
 api = RestfulApi(app, default_mediatype='application/json; charset=UTF-8')

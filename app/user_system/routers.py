@@ -1,14 +1,14 @@
 # -*- coding:utf-8 -*-
 from app.utils.api import RestfulApi
 from . import app
-from .controllers import Account, File
+from .controllers import Account, History
 from flask_restful.utils import OrderedDict
 from flask_restful.representations.json import output_json
 
 
 RESOURCES = (
     [Account, '/api/account', '/api/account/<string:action>'],
-    [File, '/api/file', '/api/file/<string:action>'],
+    [History, '/api/history'],
 )
 
 api = RestfulApi(app, default_mediatype='application/json; charset=UTF-8')

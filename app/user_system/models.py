@@ -25,7 +25,7 @@ class Role(BaseModel, db.Model, RoleMixin):
 
 class User(BaseModel, db.Model, UserMixin):
     __tablename__ = 'user'
-    phone = db.Column(db.String(16), unique=True)
+    phone = db.Column(db.String(32), unique=True)
     password = db.Column(db.String(48))
     chinese_name = db.Column(db.String(20))
     english_name = db.Column(db.String(20))
@@ -69,6 +69,7 @@ class TeacherInfo(BaseModel, db.Model):
     introduce = db.Column(db.String(200))
     success_case = db.Column(db.String(200))
     feature = db.Column(db.String(500))
+    show = db.Column(db.Boolean)
 
     course_tables = db.relationship('CourseTable', backref='teacher_info', cascade="all, delete-orphan")
 
@@ -105,6 +106,7 @@ class StudentInfo(BaseModel, db.Model):
     admission_major = db.Column(db.String(20), default='')
 
     course_tables = db.relationship('CourseTable', backref='student_info', cascade="all, delete-orphan")
+    feedbacks = db.relationship('StudyFeedback', backref='student_info', cascade="all, delete-orphan")
 
 
 class UserDatastore(SQLAlchemyUserDatastore):
@@ -118,7 +120,7 @@ class UserDatastore(SQLAlchemyUserDatastore):
                 BaseResource.server_error(errorcode.DUPLICATE, **kwargs)
             BaseResource.server_error(errorcode.DATABASE_ERROR, **kwargs)
 
-    def get_users(self, role_name, page, page_size, status=None, key=None):
+    def get_users(self, role_name, page, page_size, status=None, key=None, only_show_teacher=False):
         q = User.query.join(role_user_relationship, Role)
         try:
             q = q.filter(Role.name == role_name)
@@ -128,6 +130,8 @@ class UserDatastore(SQLAlchemyUserDatastore):
                 q = q.filter(or_(User.phone.like('%'+key+'%'),
                                  User.chinese_name.like('%'+key+'%'),
                                  User.english_name.like('%'+key+'%')))
+            if only_show_teacher and role_name == RoleType.teacher:
+                q = q.join(TeacherInfo).filter(TeacherInfo.show == only_show_teacher)
             total = q.count()
             pagination = q.order_by(User.update_time.desc()).paginate(page, page_size)
             return total, pagination.items
