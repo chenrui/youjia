@@ -1,9 +1,13 @@
 # -*- coding:utf-8 -*-
+import xlwt
+from StringIO import StringIO
 from datetime import datetime
+from flask import request, send_file
 from flask.ext.security import roles_accepted, login_required, current_user
 from app.utils.api import BaseResource
 from app.utils.validate import PhoneParam, StringParam, DateParam
 from app import errorcode, RoleType
+from app.utils.excel import set_style
 from .models import CourseApply, CourseTable, StudyFeedback
 from app.user_system.models import User, Role, role_user_relationship, user_datastore
 
@@ -118,7 +122,7 @@ class CourseTB(BaseResource):
         items = []
         for user in users:
             tbs = CourseTable.query.filter_by(student_id=user.id).\
-                order_by(CourseTable.update_time.desc()).paginate(1, 1).items
+                order_by(CourseTable.study_date.desc()).paginate(1, 1).items
             status = u'使用中' if len(tbs) != 0 else u'未创建'
             update_time = tbs[0].update_time.strftime('%Y-%m-%d') if len(tbs) != 0 else ''
             data = {
@@ -310,7 +314,7 @@ class Feedback(BaseResource):
         for user in users:
             q = StudyFeedback.query.filter_by(student_id=user.id)
             count = q.count()
-            fbs = q.order_by(StudyFeedback.update_time.desc()).paginate(1, 1).items
+            fbs = q.order_by(StudyFeedback.study_date.desc()).paginate(1, 1).items
             update_time = fbs[0].update_time.strftime('%Y-%m-%d') if count != 0 else ''
             data = {
                 'id': user.id,
@@ -335,13 +339,13 @@ class Feedback(BaseResource):
         page, page_size = self.get_params('page', 'page_size')
         q = StudyFeedback.query.filter_by(student_id=user_id)
         total = q.count()
-        fbs = q.order_by(StudyFeedback.update_time.desc()).paginate(page, page_size).items
+        fbs = q.order_by(StudyFeedback.study_date.desc()).paginate(page, page_size).items
         items = []
         for fb in fbs:
             data = {
                 'id': fb.id,
                 'chinese_name': fb.chinese_name,
-                'study_date': fb.study_date,
+                'study_date': fb.study_date.strftime('%Y-%m-%d'),
                 'class_time': fb.class_time,
                 'study_time': fb.study_time,
                 'course_name': fb.course_name,
@@ -379,3 +383,95 @@ class Feedback(BaseResource):
         fb.save()
         return self.ok('ok')
 
+
+def export_course_table():
+    try:
+        user_id = request.args['user_id']
+        user_id = int(user_id)
+        user = User.get(id=user_id)
+        if not user:
+            raise
+    except:
+        BaseResource.bad_request(errorcode.BAD_REQUEST)
+    if not user.has_role(RoleType.student) or user.has_role(RoleType.teacher):
+        BaseResource.bad_request(errorcode.BAD_REQUEST)
+    wb = export_course_tb(user)
+    output = StringIO()
+    wb.save(output)
+    output.seek(0)
+    return send_file(output, mimetype='application/octet-stream',
+                     attachment_filename='课程表.xls', as_attachment=True)
+
+
+def export_studt_feedback():
+    try:
+        user_id = request.args['user_id']
+        user_id = int(user_id)
+        user = User.get(id=user_id)
+        if not user:
+            raise
+    except:
+        BaseResource.bad_request(errorcode.BAD_REQUEST)
+    if not user.has_role(RoleType.student):
+        BaseResource.bad_request(errorcode.BAD_REQUEST)
+    wb = export_feedback(user)
+    output = StringIO()
+    wb.save(output)
+    output.seek(0)
+    return send_file(output, mimetype='application/octet-stream',
+                     attachment_filename='学习反馈.xls', as_attachment=True)
+
+
+def export_course_tb(user, sheetname='课程表', wb=None):
+    if not wb:
+        wb = xlwt.Workbook()
+    sheet = wb.add_sheet(sheetname.decode('utf-8'))
+    row1 = [u'节次', u'时间', u'星期一', u'星期二', u'星期三', u'星期四', u'星期五', u'星期六', u'星期天']
+    column1 = [u'上午', u'上午', u'下午', u'下午', u'晚上']
+    column2 = [u'8:30-10:00', u'10:00-12:00', u'13:30-15:30', u'15:30-17:30', u'19:00-21:00']
+    for i in range(1, 9):
+        sheet.col(i).width = 256*18
+    for i in range(0, len(row1)):
+        sheet.write(0, i, row1[i], set_style())
+    for i in range(0, len(column1)):
+        sheet.write(i+1, 0, column1[i], set_style())
+        sheet.write(i+1, 1, column2[i], set_style())
+    if user.has_role(RoleType.student):
+        tbs = CourseTable.get_all(student_id=user.id)
+    elif user.has_role(RoleType.teacher):
+        tbs = CourseTable.get_all(teacher_id=user.id)
+    for tb in tbs:
+        row = tb.day + 1
+        col = tb.time_type
+        if user.has_role(RoleType.student):
+            lable = '%s %s' % (tb.course_name, User.get(id=tb.teacher_id).chinese_name)
+        elif user.has_role(RoleType.teacher):
+            lable = '%s %s' % (tb.course_name, User.get(id=tb.student_id).chinese_name)
+        sheet.write(col, row, lable, set_style())
+    return wb
+
+
+def export_feedback(user, sheetname='学习反馈', wb=None):
+    if not wb:
+        wb = xlwt.Workbook()
+    q = StudyFeedback.query.filter_by(student_id=user.id)
+    fbs = q.order_by(StudyFeedback.study_date.desc()).all()
+    column0 = [u'中文名称', u'上课时间', u'课程类型']
+    column2 = [u'日期', u'学习时间', u'授课范围']
+    for fb in fbs:
+        study_date = fb.study_date.strftime('%Y-%m-%d')
+        sheetname = sheetname + study_date
+        sheet = wb.add_sheet(sheetname.decode('utf-8'))
+        column1 = [user.chinese_name, fb.class_time, fb.course_name]
+        column3 = [study_date, fb.study_time, fb.section]
+        for i in range(0, 4):
+            sheet.col(i).width = 256 * 18
+        for i in range(0, len(column0)):
+            sheet.write(i, 0, column0[i], set_style())
+            sheet.write(i, 1, column1[i], set_style())
+            sheet.write(i, 2, column2[i], set_style())
+            sheet.write(i, 3, column3[i], set_style())
+        sheet.write_merge(4, 7, 0, 3, u'课程内容:\n%s' % fb.contents, set_style(horz_center=False))
+        sheet.write_merge(8, 11, 0, 3, u'课后作业:\n%s' % fb.homework, set_style(horz_center=False))
+        sheet.write_merge(12, 15, 0, 3, u'课堂反馈:\r\n%s' % fb.feedback, set_style(horz_center=False))
+    return wb

@@ -685,3 +685,24 @@ case_id:
   "total": 1
 }
 ```
+
+# 导出
+##导出个人信息
+| methond | url |
+|:------: |:---:|
+| GET | /export/user/info?user_id=xxx |
+
+##导出课程表
+| methond | url |
+|:------: |:---:|
+| GET | /export/user/coursetable?user_id=xxx |
+
+##导出学习反馈
+| methond | url |
+|:------: |:---:|
+| GET | /export/user/feedback?user_id=xxx |
+
+##导出以上全部
+| methond | url |
+|:------: |:---:|
+| GET | /export/user/all?user_id=xxx |

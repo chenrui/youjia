@@ -1,12 +1,15 @@
 # -*- coding:utf-8 -*-
 import hashlib
+import xlwt
 import os.path
 import uuid
+from StringIO import StringIO
 from datetime import datetime, date, timedelta
-from flask import current_app, request, Response
+from flask import current_app, request, Response, send_file
 from flask.ext.security import login_user, logout_user, current_user, login_required, roles_accepted
 from app import RoleType, errorcode
 from app.utils.api import BaseResource
+from app.utils.excel import set_style
 from .models import user_datastore, User, StudentInfo, TeacherInfo
 from app.utils.validate import PhoneParam, DateParam, StringParam, ListParam
 
@@ -74,6 +77,8 @@ class Account(BaseResource):
         return {
             'id': user.id,
             'role': user.roles[0].name,
+            'chinese_name': user.chinese_name,
+            'english_name': user.english_name
         }
 
     def verify(self):
@@ -459,3 +464,69 @@ class History(Account):
         CourseTable.delete_all([tb.id for tb in user.student.course_tables])
         return self.ok('ok')
 
+
+def export_all():
+    from app.course.controllers import export_feedback, export_course_tb
+    try:
+        user_id = request.args['user_id']
+        user_id = int(user_id)
+        user = User.get(id=user_id)
+        if not user:
+            raise
+    except:
+        BaseResource.bad_request(errorcode.BAD_REQUEST)
+    if not user.has_role(RoleType.student):
+        BaseResource.bad_request(errorcode.BAD_REQUEST)
+    wb = xlwt.Workbook()
+    wb = export_student_info(user, wb=wb)
+    wb = export_course_tb(user, wb=wb)
+    wb = export_feedback(user, wb=wb)
+    output = StringIO()
+    wb.save(output)
+    output.seek(0)
+    return send_file(output, mimetype='application/octet-stream',
+                     attachment_filename='个人档案.xls', as_attachment=True)
+
+
+def export_user_info():
+    try:
+        user_id = request.args['user_id']
+        user_id = int(user_id)
+        user = User.get(id=user_id)
+        if not user:
+            raise
+    except:
+        BaseResource.bad_request(errorcode.BAD_REQUEST)
+    if not user.has_role(RoleType.student):
+        BaseResource.bad_request(errorcode.BAD_REQUEST)
+    wb = export_student_info(user)
+    output = StringIO()
+    wb.save(output)
+    output.seek(0)
+    return send_file(output, mimetype='application/octet-stream',
+                     attachment_filename='个人信息.xls', as_attachment=True)
+
+
+def export_student_info(user, sheetname='个人信息', wb=None):
+    if not wb:
+        wb = xlwt.Workbook()
+    sheet = wb.add_sheet(sheetname.decode('utf-8'))
+    column0 = [u'中文名称', u'性别', u'年龄', u'年级', u'预计入学时间', u'学习课程', u'微信', u'家长手机号码']
+    column1 = [user.chinese_name, user.student.sexual, user.student.age,
+               user.student.grade, user.student.enrollment_time, user.student.course_name,
+               user.student.weichat, user.student.parent_phone]
+    column3 = [u'英文名称', u'所在地', u'学校', u'期望留学国家', u'期望留学专业', u'学习范围', u'手机号码', u'备注']
+    column4 = [user.english_name, user.student.location, user.student.school, user.student.study_country,
+               user.student.major, user.student.learn_range, user.phone, user.student.remark]
+
+    sheet.col(0).width = 256*18
+    sheet.col(1).width = 256*18
+    sheet.col(3).width = 256*18
+    sheet.col(4).width = 256*18
+    for i in range(0, len(column0)):
+        sheet.write(i, 0, column0[i], set_style(True))
+        sheet.write(i, 1, column1[i], set_style(False))
+    for i in range(0, len(column3)):
+        sheet.write(i, 3, column3[i], set_style(True))
+        sheet.write(i, 4, column4[i], set_style(False))
+    return wb

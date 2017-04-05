@@ -61,7 +61,7 @@ class StudyFeedback(BaseModel, db.Model):
     __tablename__ = 'study_feedback'
     student_id = db.Column(db.Integer, db.ForeignKey('student_info.id'))
     chinese_name = db.Column(db.String(20))
-    study_date = db.Column(db.String(10))
+    study_date = db.Column(db.Date)
     class_time = db.Column(db.String(30))
     study_time = db.Column(db.String(30))
     course_name = db.Column(db.String(20))
