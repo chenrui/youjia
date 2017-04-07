@@ -122,7 +122,7 @@ class CourseTB(BaseResource):
         items = []
         for user in users:
             tbs = CourseTable.query.filter_by(student_id=user.id).\
-                order_by(CourseTable.study_date.desc()).paginate(1, 1).items
+                order_by(CourseTable.update_time.desc()).paginate(1, 1).items
             status = u'使用中' if len(tbs) != 0 else u'未创建'
             update_time = tbs[0].update_time.strftime('%Y-%m-%d') if len(tbs) != 0 else ''
             data = {
