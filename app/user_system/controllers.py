@@ -260,6 +260,9 @@ class Account(BaseResource):
                     'major': user.teacher.major,
                     'country': user.teacher.country,
                     'phone': phone,
+                    'introduce': user.teacher.introduce,
+                    'success_case': user.teacher.success_case,
+                    'feature': user.teacher.feature,
                     'update_time': user.update_time.strftime('%Y-%m-%d %H:%M:%S'),
                 }
                 items.append(info)
