@@ -339,7 +339,8 @@ class Account(BaseResource):
         parser.add_argument('major', type=StringParam.check, required=False, location='json', min=1, max=20)
         parser.add_argument('course_name', type=StringParam.check, required=True, location='json', min=1, max=20)
         parser.add_argument('learn_range', type=StringParam.check, required=True, location='json', min=1, max=40)
-        parser.add_argument('wechat', type=StringParam.check, required=True, location='json', min=1, max=20)
+        parser.add_argument('wechat', type=StringParam.check, required=False, location='json', min=1, max=20,
+                            default='')
         parser.add_argument('phone', type=PhoneParam.check, required=True, location='json')
         parser.add_argument('parent_phone', type=PhoneParam.check, required=True, location='json')
         parser.add_argument('remark', type=StringParam.check, required=False, location='json', min=1, max=100)
@@ -372,7 +373,8 @@ class Account(BaseResource):
         parser.add_argument('major', type=StringParam.check, required=True, location='json', min=1, max=20)
         parser.add_argument('country', type=StringParam.check, required=True, location='json', min=1, max=20)
         parser.add_argument('phone', type=PhoneParam.check, required=False, location='json')
-        parser.add_argument('wechat', type=StringParam.check, required=False, location='json', min=1, max=20)
+        parser.add_argument('wechat', type=StringParam.check, required=False, location='json', min=1, max=20,
+                            default='')
         parser.add_argument('introduce', type=StringParam.check, required=True, location='json', min=1, max=200)
         parser.add_argument('success_case', type=StringParam.check, required=True, location='json', min=1, max=200)
         parser.add_argument('feature', type=StringParam.check, required=True, location='json', min=1, max=500)

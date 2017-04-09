@@ -17,16 +17,10 @@
 返回
 ```json
 {
-   	"total": 总数,
-	"items": [
-		{
-			"id": "序号",
-			"name", "名字"
-		},
-		{
-		   ...
-		}
-	]
+  "chinese_name": "系统管理员",
+  "english_name": "superadmin",
+  "id": 1000,
+  "role": "admin"
 }
 ```
 
@@ -90,7 +84,7 @@
 {
 	"chinese_name": "中文名称",
 	"english_name": "英文名称",
-	"sexual": "性别， 可不填",   
+	"sexual": "性别， 可不填",
 	"location": "所在地",
 	"age": "年龄， 可不填",
 	"school": "学校",
@@ -179,6 +173,7 @@ key: "姓名或手机"
 ```
 返回
 ```json
+{
   "items": [
     {
 	  "id": 1001,
@@ -192,7 +187,9 @@ key: "姓名或手机"
       "update_time": "2017-04-01 11:17:31"
     }
   ],
-  "total": 1
+  "page_total": 1,
+  "page_index": 1
+}
 ```
 
 ##获取老师列表
@@ -208,20 +205,24 @@ show: true/false  是否只显示师资力量的老师, 默认为false
 ```
 返回
 ```json
+{
   "items": [
     {
-	  "id": 1001,
-      "age": 18,
-      "chinese_name": "中文名称",
-      "course_name": "托福",
-      "location": "成都",
-      "phone": "13709065417",
-      "school": "学校",
-      "sexual": "男",
-      "update_time": "2017-04-01 11:17:31"
+      "chinese_name": "张张张",
+      "country": "美国",
+      "english_name": "zhang",
+      "feature": "填入个人特色",
+      "graduated": "哈佛",
+      "id": 1002,
+      "introduce": "填入个人简介",
+      "major": "英语",
+      "phone": "13550000000",
+      "success_case": "填入成功案例",
+      "update_time": "2017-04-06 11:01:59"
     }
   ],
   "total": 1
+}
 ```
 
 ##获取老师或学生详细信息
@@ -253,8 +254,24 @@ show: true/false  是否只显示师资力量的老师, 默认为false
 }
 ```
 
+##删除用户
+| methond | url |
+|:------: |:---:|
+| DELETE | /api/account?user_id=xxxx |
+参数
+```json
+无
+```
+返回
+```json
+{
+	"message": "返回消息",
+	"status_code": 200
+}
+```
+
 #历史学生
-##添加历史学生
+##学生归档
 | methond | url |
 |:------: |:---:|
 | POST | /api/history?user_id=xxxx |
@@ -321,6 +338,10 @@ key: "姓名或手机"
 	"admission_major": "录取专业",
 	"test1": "考试科目1",
 	"score1": "科目1成绩",
+	"test2": "",
+	"score2": "",
+	"test3": "",
+	"score3": "",
 }
 ```
 
@@ -395,13 +416,13 @@ key: "姓名或手机"
 ```json
 [
   {
-    "chinese": "中文名称",
+    "chinese_name": "中文名称",
     "id": 1006
   }
 ]
 ```
 
-##获取课程列表用户索引
+##获取课程列表用户索引（学生）
 | methond | url |
 |:------: |:---:|
 | GET | /api/coursetable/students |
@@ -414,7 +435,8 @@ key: "姓名或手机"
 返回
 ```json
 {
-	"total": 1,
+	"page_total": 1,
+	"page_index": 1,
 	"items": [
 	    {
 		  "id": 1001,
@@ -424,8 +446,34 @@ key: "姓名或手机"
 	      "learn_range": "学习范围",
 	      "location": "目前地址",
 	      "phone": "",
-	      "status": "使用中/未创建",
+	      "status": "已创建/未创建",
 	      "study_country": "期望学校",
+	      "update_time": "2017-04-01"
+	    }
+	]
+}
+```
+
+##获取课程列表用户索引（老师）
+| methond | url |
+|:------: |:---:|
+| GET | /api/coursetable/teachers |
+参数
+```json
+page:
+page_size:
+key: "姓名或手机"
+```
+返回
+```json
+{
+	"page_total": 1,
+	"page_index": 1,
+	"items": [
+	    {
+		  "id": 1001,
+	      "chinese_name": "",
+	      "status": "已创建/未创建",
 	      "update_time": "2017-04-01"
 	    }
 	]
@@ -506,7 +554,8 @@ key: "姓名或手机"
       "update_time": "2017-04-03"
     }
   ],
-  "total": 1
+ "page_total": 1,
+ "page_index": 1
 }
 ```
 
@@ -535,7 +584,8 @@ key: "姓名或手机"
       "study_time": "8:00-11:00"
     }
   ],
-  "total": 1
+"page_total": 1,
+"page_index": 1,
 }
 ```
 
@@ -556,9 +606,10 @@ key: "姓名或手机"
 ```
 
 ##删除学习反馈
-| methond | url |
+| methond | url | 说明
 |:------: |:---:|
-| DELETE | /api/feedback?fb_id=xxx |
+| DELETE | /api/feedback?fb_id=xxx | 删除单个
+| DELETE | /api/feedback?user_id=xxx | 删除全部
 参数
 ```json
 无
@@ -649,7 +700,8 @@ key: "姓名或手机"
       "update_time": "2017-04-04"
     }
   ],
-  "total": 1
+  "page_total": 1,
+  "page_index": 1
 }
 ```
 
@@ -682,7 +734,8 @@ case_id:
       "update_time": "2017-04-04"
     }
   ],
-  "total": 1
+  "page_total": 1,
+  "page_index": 1
 }
 ```
 

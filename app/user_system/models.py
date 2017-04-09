@@ -65,7 +65,7 @@ class TeacherInfo(BaseModel, db.Model):
     # 专业
     major = db.Column(db.String(20))
     country = db.Column(db.String(10))
-    weichat = db.Column(db.String(20))
+    weichat = db.Column(db.String(20), default='')
     introduce = db.Column(db.String(200))
     success_case = db.Column(db.String(200))
     feature = db.Column(db.String(500))
@@ -87,7 +87,7 @@ class StudentInfo(BaseModel, db.Model):
     major = db.Column(db.String(20))
     course_name = db.Column(db.String(20))
     learn_range = db.Column(db.String(40))
-    weichat = db.Column(db.String(20))
+    weichat = db.Column(db.String(20), default='')
     parent_phone = db.Column(db.String(16))
     remark = db.Column(db.String(100), default='')
 

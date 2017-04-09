@@ -186,7 +186,7 @@ class CourseTB(BaseResource):
         for user in users:
             data = {
                 'id': user.id,
-                'chinese': user.chinese_name,
+                'chinese_name': user.chinese_name,
             }
             items.append(data)
         return items
