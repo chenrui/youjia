@@ -9,6 +9,7 @@ from flask import current_app, request, Response, send_file
 from flask.ext.security import login_user, logout_user, current_user, login_required, roles_accepted
 from app import RoleType, errorcode
 from app.utils.api import BaseResource
+from app.utils.utils import page_total
 from app.utils.excel import set_style
 from .models import user_datastore, User, StudentInfo, TeacherInfo
 from app.utils.validate import PhoneParam, DateParam, StringParam, ListParam
@@ -283,7 +284,8 @@ class Account(BaseResource):
                 }
                 items.append(info)
         return {
-            'total': total,
+            'page_total': page_total(total, page_size),
+            'page_index': page,
             'items': items,
         }
 

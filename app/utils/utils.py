@@ -190,3 +190,10 @@ def ip_country(ip):
         return 'unknown'
     return ret[-2]
 
+
+def page_total(total, page_size):
+    pg_total = total / page_size
+    if total % page_size != 0:
+        pg_total += 1
+    return pg_total
+

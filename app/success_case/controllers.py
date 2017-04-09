@@ -4,6 +4,7 @@ from flask.ext.security import roles_accepted
 from app import RoleType, errorcode
 from app.utils.api import BaseResource
 from app.utils.validate import StringParam
+from app.utils.utils import page_total
 from .models import SuccessCase
 
 
@@ -76,16 +77,18 @@ class Case(BaseResource):
         total, items = SuccessCase.get_all(page, page_size)
         datas = []
         for item in items:
+            school = item.school if item.school else u'待定'
             data = {
                 'id': item.id,
                 'chinese_name': item.chinese_name,
-                'school': item.school,
+                'school': school,
                 'tag': item.tag,
                 'update_time': item.update_time.strftime('%Y-%m-%d'),
             }
             datas.append(data)
         return {
-            'total': total,
+            'page_total': page_total(total, page_size),
+            'page_index': page,
             'items': datas,
         }
 
@@ -106,10 +109,11 @@ class Case(BaseResource):
             total, items = SuccessCase.get_all(page, page_size, tag)
         datas = []
         for item in items:
+            school = item.school if item.school else u'待定'
             data = {
                 'id': item.id,
                 'chinese_name': item.chinese_name,
-                'school': item.school,
+                'school': school,
                 'tag': item.tag,
                 'test1': item.test1,
                 'test2': item.test2,
@@ -123,7 +127,8 @@ class Case(BaseResource):
             }
             datas.append(data)
         return {
-            'total': total,
+            'page_total': page_total(total, page_size),
+            'page_index': page,
             'items': datas,
         }
 

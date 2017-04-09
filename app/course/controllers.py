@@ -8,6 +8,7 @@ from app.utils.api import BaseResource
 from app.utils.validate import PhoneParam, StringParam, DateParam
 from app import errorcode, RoleType
 from app.utils.excel import set_style
+from app.utils.utils import page_total
 from .models import CourseApply, CourseTable, StudyFeedback
 from app.user_system.models import User, Role, role_user_relationship, user_datastore
 
@@ -47,7 +48,8 @@ class CourseResource(BaseResource):
             }
             datas.append(data)
         return {
-            'total': total,
+            'page_index': page,
+            'page_total': page_total(total, page_size),
             'items': datas,
         }
 
@@ -123,7 +125,7 @@ class CourseTB(BaseResource):
         for user in users:
             tbs = CourseTable.query.filter_by(student_id=user.id).\
                 order_by(CourseTable.update_time.desc()).paginate(1, 1).items
-            status = u'使用中' if len(tbs) != 0 else u'未创建'
+            status = u'已创建' if len(tbs) != 0 else u'未创建'
             update_time = tbs[0].update_time.strftime('%Y-%m-%d') if len(tbs) != 0 else ''
             data = {
                 'id': user.id,
@@ -139,7 +141,8 @@ class CourseTB(BaseResource):
             }
             items.append(data)
         return {
-            'total': total,
+            'page_total': page_total(total, page_size),
+            'page_index': page,
             'items': items,
         }
 
@@ -154,19 +157,18 @@ class CourseTB(BaseResource):
         for user in users:
             tbs = CourseTable.query.filter_by(teacher_id=user.id).\
                 order_by(CourseTable.update_time.desc()).paginate(1, 1).items
-            status = u'使用中' if len(tbs) != 0 else u'未创建'
+            status = u'已创建' if len(tbs) != 0 else u'未创建'
             update_time = tbs[0].update_time.strftime('%Y-%m-%d') if len(tbs) != 0 else ''
-            phone = user.phone if len(user.phone) != 32 else ''
             data = {
                 'id': user.id,
                 'chinese_name': user.chinese_name,
-                'phone': phone,
                 'status': status,
                 'update_time': update_time,
             }
             items.append(data)
         return {
-            'total': total,
+            'page_total': page_total(total, page_size),
+            'page_index': page,
             'items': items,
         }
 
@@ -300,10 +302,19 @@ class Feedback(BaseResource):
     @roles_accepted(RoleType.admin)
     def delete(self):
         parser = self.get_parser()
-        parser.add_argument('fb_id', type=int, required=True, location='args')
-        fb = StudyFeedback.get(id=self.get_param('fb_id'))
-        if fb:
-            fb.delete()
+        parser.add_argument('fb_id', type=int, required=False, location='args')
+        parser.add_argument('user_id', type=int, required=False, location='args')
+        fb_id = self.get_param('fb_id')
+        user_id = self.get_param('user_id')
+        if fb_id:
+            fb = StudyFeedback.get(id=self.get_param('fb_id'))
+            if fb:
+                fb.delete()
+        elif user_id:
+            user = User.get(id=user_id)
+            if user.has_role(RoleType.student):
+                for fb in user.student.feedbacks:
+                    fb.delete()
         return self.ok('ok')
 
     def get_student(self, parser):
@@ -330,7 +341,8 @@ class Feedback(BaseResource):
             }
             items.append(data)
         return {
-            'total': total,
+            'page_total': page_total(total, page_size),
+            'page_index': page,
             'items': items,
         }
 
@@ -356,7 +368,8 @@ class Feedback(BaseResource):
             }
             items.append(data)
         return {
-            'total': total,
+            'page_total': page_total(total, page_size),
+            'page_index': page,
             'items': items,
         }
 
