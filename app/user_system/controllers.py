@@ -240,7 +240,6 @@ class Account(BaseResource):
             return self._get_teacher_profile(user)
         return self.bad_request(errorcode.BAD_REQUEST)
 
-    @login_required
     def get_users(self, role_name, status):
         parser = self.get_parser()
         self.add_pagination_args(parser)
@@ -472,6 +471,7 @@ class History(Account):
         return self.ok('ok')
 
 
+@login_required
 def export_all():
     from app.course.controllers import export_feedback, export_course_tb
     try:
@@ -495,6 +495,7 @@ def export_all():
                      attachment_filename='个人档案.xls', as_attachment=True)
 
 
+@login_required
 def export_user_info():
     try:
         user_id = request.args['user_id']

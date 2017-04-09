@@ -397,6 +397,7 @@ class Feedback(BaseResource):
         return self.ok('ok')
 
 
+@login_required
 def export_course_table():
     try:
         user_id = request.args['user_id']
@@ -416,6 +417,7 @@ def export_course_table():
                      attachment_filename='课程表.xls', as_attachment=True)
 
 
+@login_required
 def export_studt_feedback():
     try:
         user_id = request.args['user_id']
