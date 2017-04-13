@@ -89,12 +89,12 @@ class Account(BaseResource):
         parser.add_argument('study_country', type=unicode, required=True, location='json')
         user = User.get(phone=self.get_param('phone'))
         if not user:
-            self.bad_request(errorcode.INVALID_USER)
+            self.bad_request(errorcode.VERIFY_USER_ERROR)
         if not user.has_role(RoleType.student):
-            self.bad_request(errorcode.INVALID_USER)
+            self.bad_request(errorcode.VERIFY_USER_ERROR)
         if user.student.study_country != self.get_param('study_country') or \
                         user.student.parent_phone != self.get_param('parent_phone'):
-            self.bad_request(errorcode.INVALID_USER)
+            self.bad_request(errorcode.VERIFY_USER_ERROR)
         user.verify_token = uuid.uuid1().get_hex()
         user.save()
         return {'token': user.verify_token}
