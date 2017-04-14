@@ -27,7 +27,7 @@ class InitData(Command):
 
     def run(self):
         self.add_role()
-        self.add_admin('系统管理员', 'superadmin', '13800138000', '123456', 1000)
+        self.add_admin('杨老师', 'superadmin', '15882408557', 'VmQk2017', 1005)
 
     def add_role(self):
         user_datastore.create_role(name=RoleType.admin, description='管理员')

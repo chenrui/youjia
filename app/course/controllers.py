@@ -485,9 +485,9 @@ def export_course_tb(user, sheetname='课程表', wb=None):
         row = tb.day + 1
         col = tb.time_type
         if user.has_role(RoleType.student):
-            lable = '%s %s' % (tb.course_name, User.get(id=tb.teacher_id).chinese_name)
+            lable = '%s\n%s' % (tb.course_name, User.get(id=tb.teacher_id).chinese_name)
         elif user.has_role(RoleType.teacher):
-            lable = '%s %s' % (tb.course_name, User.get(id=tb.student_id).chinese_name)
+            lable = '%s\n%s' % (tb.course_name, User.get(id=tb.student_id).chinese_name)
         sheet.write(col, row, lable, set_style())
     return wb
 
@@ -514,5 +514,5 @@ def export_feedback(user, sheetname='学习反馈', wb=None):
             sheet.write(i, 3, column3[i], set_style())
         sheet.write_merge(4, 7, 0, 3, u'课程内容:\n%s' % fb.contents, set_style(horz_center=False))
         sheet.write_merge(8, 11, 0, 3, u'课后作业:\n%s' % fb.homework, set_style(horz_center=False))
-        sheet.write_merge(12, 15, 0, 3, u'课堂反馈:\r\n%s' % fb.feedback, set_style(horz_center=False))
+        sheet.write_merge(12, 15, 0, 3, u'课堂反馈:\n%s' % fb.feedback, set_style(horz_center=False))
     return wb
