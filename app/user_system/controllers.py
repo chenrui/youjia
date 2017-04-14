@@ -215,18 +215,13 @@ class Account(BaseResource):
             pass
         return self.ok('ok')
 
-    @login_required
     def get_summary(self):
         parser = self.get_parser()
         parser.add_argument('user_id', type=int, required=True, location='args')
         user_id = self.get_param('user_id')
-        user = current_user
-        if user_id != current_user.id:
-            if not current_user.has_role(RoleType.admin):
-                self.unauthorized(errorcode.UNAUTHORIZED)
-            user = user_datastore.find_user(id=user_id)
-            if not user:
-                self.bad_request(errorcode.NOT_FOUND)
+        user = user_datastore.find_user(id=user_id)
+        if not user:
+            self.bad_request(errorcode.NOT_FOUND)
         if not user.has_role(RoleType.student):
             self.bad_request(errorcode.NOT_FOUND)
         data = {}
@@ -519,25 +514,33 @@ class History(Account):
 @login_required
 def export_all():
     from app.course.controllers import export_feedback, export_course_tb
+    from app.utils.export import PDFFormat
     try:
         user_id = request.args['user_id']
         user_id = int(user_id)
-        user = User.get(id=user_id)
-        if not user:
-            raise
+        user = current_user
+        if user_id != current_user.id:
+            if not current_user.has_role(RoleType.admin):
+                raise
+            user = User.get(id=user_id)
+            if not user:
+                raise
     except:
         BaseResource.bad_request(errorcode.BAD_REQUEST)
     if not user.has_role(RoleType.student):
         BaseResource.bad_request(errorcode.BAD_REQUEST)
-    wb = xlwt.Workbook()
-    wb = export_student_info(user, wb=wb)
-    wb = export_course_tb(user, wb=wb)
-    wb = export_feedback(user, wb=wb)
-    output = StringIO()
-    wb.save(output)
-    output.seek(0)
+    output = PDFFormat().export(user.id)
+    if not output:
+        BaseResource.server_error(errorcode.DATABASE_ERROR)
+    # wb = xlwt.Workbook()
+    # wb = export_student_info(user, wb=wb)
+    # wb = export_course_tb(user, wb=wb)
+    # wb = export_feedback(user, wb=wb)
+    # output = StringIO()
+    # wb.save(output)
+    # output.seek(0)
     return send_file(output, mimetype='application/octet-stream',
-                     attachment_filename='个人档案.xls', as_attachment=True)
+                     attachment_filename='个人档案.pdf', as_attachment=True)
 
 
 @login_required

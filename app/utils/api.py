@@ -87,7 +87,6 @@ class RequestParser(reqparse.RequestParser):
             if found or arg.store_missing:
                 namespace[arg.dest or arg.name] = value
         if errors:
-            print errors
             abort(400, message=u'参数错误(%s)' % errors.keys()[0], status_code=errorcode.BAD_REQUEST)
 
         if strict and req.unparsed_arguments:
