@@ -12,6 +12,7 @@ from app.utils.api import BaseResource
 from app.utils.utils import page_total
 from app.utils.excel import set_style
 from .models import user_datastore, User, StudentInfo, TeacherInfo
+from app.course.models import CourseTable, StudyFeedback
 from app.utils.validate import PhoneParam, DateParam, StringParam, ListParam
 
 
@@ -49,6 +50,8 @@ class Account(BaseResource):
             return self.get_users(RoleType.teacher, 'enabled')
         elif action == 'profile':
             return self.get_profile()
+        elif action == 'summary':
+            return self.get_summary()
         self.bad_request(errorcode.BAD_REQUEST)
 
     def put(self, action=None):
@@ -213,6 +216,42 @@ class Account(BaseResource):
         return self.ok('ok')
 
     @login_required
+    def get_summary(self):
+        parser = self.get_parser()
+        parser.add_argument('user_id', type=int, required=True, location='args')
+        user_id = self.get_param('user_id')
+        user = current_user
+        if user_id != current_user.id:
+            if not current_user.has_role(RoleType.admin):
+                self.unauthorized(errorcode.UNAUTHORIZED)
+            user = user_datastore.find_user(id=user_id)
+            if not user:
+                self.bad_request(errorcode.NOT_FOUND)
+        if not user.has_role(RoleType.student):
+            self.bad_request(errorcode.NOT_FOUND)
+        data = {}
+        data['profile'] = self._get_student_profile(user)
+        tbs = CourseTable.get_all(student_id=user.id)
+        data['course_table'] = [{'day': tb.day,
+                                 'start_time': tb.start_time,
+                                 'stop_time': tb.stop_time,
+                                 'course_name': tb.course_name,
+                                 'chinese_name': User.get(id=tb.teacher_id).chinese_name
+                                 } for tb in tbs]
+        fbs = StudyFeedback.query.filter_by(student_id=user.id).order_by(StudyFeedback.study_date.desc()).all()
+        data['feedback'] = [{'chinese_name': fb.chinese_name,
+                             'study_date': fb.study_date.strftime('%Y-%m-%d'),
+                             'class_time': fb.class_time,
+                             'study_time': fb.study_time,
+                             'course_name': fb.course_name,
+                             'section': fb.section,
+                             'contents': fb.contents,
+                             'homework': fb.homework,
+                             'feedback': fb.feedback,
+                             } for fb in fbs]
+        return data
+
+    @roles_accepted(RoleType.admin)
     def set_profile(self):
         parser = self.get_parser()
         parser.add_argument('user_id', type=int, required=True, location='args')
@@ -529,9 +568,9 @@ def export_student_info(user, sheetname='个人信息', wb=None):
     column1 = [user.chinese_name, user.student.sexual, user.student.age,
                user.student.grade, user.student.enrollment_time, user.student.course_name,
                user.student.weichat, user.student.parent_phone]
-    column3 = [u'英文名称', u'所在地', u'学校', u'期望留学国家', u'期望留学专业', u'学习范围', u'手机号码', u'备注']
+    column3 = [u'英文名称', u'所在地', u'学校', u'期望留学国家', u'期望留学专业', u'学习范围', u'手机号码']
     column4 = [user.english_name, user.student.location, user.student.school, user.student.study_country,
-               user.student.major, user.student.learn_range, user.phone, user.student.remark]
+               user.student.major, user.student.learn_range, user.phone]
 
     sheet.col(0).width = 256*18
     sheet.col(1).width = 256*18

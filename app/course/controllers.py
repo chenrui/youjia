@@ -64,6 +64,7 @@ class CourseResource(BaseResource):
             'items': datas,
         }
 
+    @roles_accepted(RoleType.admin)
     def delete_course_apply(self):
         parser = self.get_parser()
         parser.add_argument('apply_ids', type=str, required=True, location='args')

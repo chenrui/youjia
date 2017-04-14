@@ -296,6 +296,62 @@ show: true/false  是否只显示师资力量的老师, 默认为false
 }
 ```
 
+##学员信息
+| methond | url |
+|:------: |:---:|
+| GET | /api/account/summary?user_id=xxxx |
+参数
+```json
+无
+```
+返回
+```json
+{
+	"profile": {
+		"chinese_name": "中文名称",
+		"english_name": "英文名称",
+		"sexual": "性别",
+		"location": "所在地",
+		"age": "年龄",
+		"school": "学校",
+		"grade": "年级",
+		"study_country": "期望留学国家",
+		"enrollment_time": "预计入学时间",
+		"major": "期望留学专业",
+		"course_name": "课程名字",
+		"learn_range": "学习范围",
+		"wechat": "微信",
+		"phone": "手机号码",
+		"parent_phone": "家长手机号码",
+		"remark": "备注"
+	},
+	"course_table": [
+		{
+		    "chinese_name": "中文名称",
+		    "course_name": "托福读",
+		    "day": 5,
+		    "start_time": "19:00",
+		    "stop_time": "21:00"
+	    },
+	    ...
+    ],
+    "feedback": [
+	  {
+	      "chinese_name": "中文名",
+	      "class_time": "8:30-10:00",
+	      "contents": "课程内容",
+	      "course_name": "托福",
+	      "feedback": "课堂反馈",
+	      "homework": "课后作业",
+	      "section": "听 说 读 写",
+	      "study_date": "2017-05-05",
+	      "study_time": "8:00-11:00"
+      },
+      ...
+   ]
+}
+```
+
 #历史学生
 ##学生归档
 | methond | url |
