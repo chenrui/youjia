@@ -1,8 +1,24 @@
-# WEB系统接口文档
+# 接口文档
 
 
 [TOC]
 #用户管理
+##当前用户是否登录
+| methond | url |
+|:------: |:---:|
+| GET | /api/account/is_login |
+参数
+```json
+无
+```
+返回
+```json
+{
+	"message": "返回消息",
+	"status_code": 200
+}
+```
+
 ##登录
 | methond | url |
 |:------: |:---:|
@@ -40,12 +56,6 @@
 ```json
 {
 	"token": "xxxxxx"
-}
-```
-```json
-{
-	"message": "返回消息",
-	"status_code": 200
 }
 ```
 
