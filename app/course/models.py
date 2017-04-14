@@ -7,7 +7,9 @@ from app.database import db, BaseModel
 
 class CourseApply(BaseModel, db.Model):
     __tablename__ = 'course_apply'
+    name = db.Column(db.String(20))
     phone = db.Column(db.String(16))
+    teacher = db.Column(db.String(20))
     create_time = db.Column(db.DateTime, default=datetime.now)
 
     @classmethod

@@ -40,6 +40,22 @@
 }
 ```
 
+##登出
+| methond | url |
+|:------: |:---:|
+| GET | /api/account/logout |
+参数
+```json
+无
+```
+返回
+```json
+{
+	"message": "返回消息",
+	"status_code": 200
+}
+```
+
 ##忘记密码验证
 | methond | url |
 |:------: |:---:|
@@ -267,7 +283,7 @@ show: true/false  是否只显示师资力量的老师, 默认为false
 ##删除用户
 | methond | url |
 |:------: |:---:|
-| DELETE | /api/account?user_id=xxxx |
+| DELETE | /api/account?user_ids=1,2,3 |
 参数
 ```json
 无
@@ -352,6 +368,53 @@ key: "姓名或手机"
 	"score2": "",
 	"test3": "",
 	"score3": "",
+}
+```
+
+#试听
+##预约试听
+| methond | url |
+|:------: |:---:|
+| POST | /api/course/apply |
+参数
+```json
+{
+	"phone": "13550000000",
+	"name": "姓名",
+	"teacher": "预约老师"  可不填
+}
+```
+返回
+```json
+{
+	"message": "返回消息",
+	"status_code": 200
+}
+```
+
+##获取试听列表
+| methond | url |
+|:------: |:---:|
+| GET | /api/course/apply_info |
+参数
+```json
+page:
+page_size:
+```
+返回
+```json
+{
+  "items": [
+    {
+
+      "name": "姓名",
+      "phone": "13550000000",
+      "teacher": "预约老师",
+      "create_time": "2017-04-14 13:10:59",
+    }
+  ],
+  "page_index": 1,
+  "page_total": 1
 }
 ```
 
@@ -677,7 +740,7 @@ key: "姓名或手机"
 ##删除案例
 | methond | url |
 |:------: |:---:|
-| DELETE | /api/success_case?case_id=xxx |
+| DELETE | /api/success_case?case_ids=1,2,3 |
 参数
 ```json
 无

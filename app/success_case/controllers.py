@@ -35,11 +35,16 @@ class Case(BaseResource):
     @roles_accepted(RoleType.admin)
     def delete(self, action=None):
         parser = self.get_parser()
-        parser.add_argument('case_id', type=int, required=True, location='args')
-        case_id = self.get_param('case_id')
-        case = SuccessCase.get(id=case_id)
-        if case:
-            case.delete()
+        parser.add_argument('case_ids', type=str, required=True, location='args')
+        try:
+            case_ids = self.get_param('case_ids').split(',')
+            case_ids = [int(i) for i in case_ids]
+        except:
+            self.bad_request(errorcode.BAD_REQUEST)
+        for case_id in case_ids:
+            case = SuccessCase.get(id=case_id)
+            if case:
+                case.delete()
         return self.ok('ok')
 
     def set_case(self, parser, case):

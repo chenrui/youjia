@@ -27,9 +27,13 @@ class CourseResource(BaseResource):
     def add_source_apply(self):
         parser = self.get_parser()
         parser.add_argument('phone', type=PhoneParam.check, required=True, location='json')
-        phone = self.get_param('phone')
+        parser.add_argument('name', type=StringParam.check, required=True, location='json', min=1, max=20)
+        parser.add_argument('teacher', type=StringParam.check, required=False, location='json', min=1, max=20,
+                            default='')
         ca = CourseApply()
-        ca.phone = phone
+        ca.phone = self.get_param('phone')
+        ca.name = self.get_param('name')
+        ca.teacher = self.get_param('teacher')
         ca.save()
         return self.ok('ok')
 
@@ -43,7 +47,8 @@ class CourseResource(BaseResource):
         for item in items:
             data = {
                 'phone': item.phone,
-                'course_name': item.course.name,
+                'name': item.name,
+                'teacher': item.teacher,
                 'create_time': item.create_time.strftime('%Y-%m-%d %H:%M:%S'),
             }
             datas.append(data)

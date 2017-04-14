@@ -120,15 +120,21 @@ class Account(BaseResource):
     @roles_accepted(RoleType.admin)
     def delete_user(self):
         parser = self.get_parser()
-        parser.add_argument('user_id', type=int, required=True, location='args')
-        user = user_datastore.find_user(id=self.get_param('user_id'))
-        if user:
-            user.delete()
-            try:
-                if user.photo_path:
-                    os.remove(os.path.join(current_app.config['FILE_STORE_BASE'], user.photo_path))
-            except:
-                pass
+        parser.add_argument('user_ids', type=str, required=True, location='args')
+        try:
+            user_ids = self.get_param('user_ids').split(',')
+            user_ids = [int(i) for i in user_ids]
+        except:
+            self.bad_request(errorcode.BAD_REQUEST)
+        for user_id in user_ids:
+            user = user_datastore.find_user(id=user_id)
+            if user:
+                user.delete()
+                try:
+                    if user.photo_path:
+                        os.remove(os.path.join(current_app.config['FILE_STORE_BASE'], user.photo_path))
+                except:
+                    pass
         return self.ok('ok')
 
     @roles_accepted(RoleType.admin)
