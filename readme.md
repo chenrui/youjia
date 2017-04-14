@@ -406,7 +406,7 @@ page_size:
 {
   "items": [
     {
-
+	  "id": 1,
       "name": "姓名",
       "phone": "13550000000",
       "teacher": "预约老师",
@@ -415,6 +415,23 @@ page_size:
   ],
   "page_index": 1,
   "page_total": 1
+}
+```
+
+##删除试听
+| methond | url |
+|:------: |:---:|
+| DELETE | /api/course/apply_info?apply_ids=1,2,3 |
+参数
+```json
+无
+```
+返回
+```json
+```json
+{
+	"message": "返回消息",
+	"status_code": 200
 }
 ```
 

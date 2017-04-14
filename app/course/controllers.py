@@ -24,6 +24,11 @@ class CourseResource(BaseResource):
             return self.get_course_apply()
         self.bad_request(errorcode.BAD_REQUEST)
 
+    def delete(self, action=None):
+        if action == 'apply_info':
+            return self.delete_course_apply()
+        self.bad_request(errorcode.BAD_REQUEST)
+
     def add_source_apply(self):
         parser = self.get_parser()
         parser.add_argument('phone', type=PhoneParam.check, required=True, location='json')
@@ -46,6 +51,7 @@ class CourseResource(BaseResource):
         datas = []
         for item in items:
             data = {
+                'id': item.id,
                 'phone': item.phone,
                 'name': item.name,
                 'teacher': item.teacher,
@@ -57,6 +63,20 @@ class CourseResource(BaseResource):
             'page_total': page_total(total, page_size),
             'items': datas,
         }
+
+    def delete_course_apply(self):
+        parser = self.get_parser()
+        parser.add_argument('apply_ids', type=str, required=True, location='args')
+        try:
+            apply_ids = self.get_param('apply_ids').split(',')
+            apply_ids = [int(i) for i in apply_ids]
+        except:
+            self.bad_request(errorcode.BAD_REQUEST)
+        for apply_id in apply_ids:
+            case = CourseApply.get(id=apply_id)
+            if case:
+                case.delete()
+        return self.ok('ok')
 
 
 class CourseTB(BaseResource):
