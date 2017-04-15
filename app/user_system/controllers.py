@@ -284,10 +284,15 @@ class Account(BaseResource):
         parser = self.get_parser()
         self.add_pagination_args(parser)
         parser.add_argument('key', type=StringParam.check, required=False, location='args', min=1, max=20)
+        parser.add_argument('order_update_time', type=str, required=False, location='args', default='desc')
         parser.add_argument('show', type=str, required=False, location='args', default='false')
         page, page_size, key = self.get_params('page', 'page_size', 'key')
         show = self.get_param('show') == 'true'
-        total, users = user_datastore.get_users(role_name, page, page_size, status, key, show)
+        if self.get_param('order_update_time') == 'desc':
+            order_by = User.update_time.desc()
+        else:
+            order_by = User.update_time
+        total, users = user_datastore.get_users(role_name, page, page_size, status, key, show, order_by)
         items = []
         if role_name == RoleType.teacher:
             for user in users:

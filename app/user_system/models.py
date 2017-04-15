@@ -120,7 +120,8 @@ class UserDatastore(SQLAlchemyUserDatastore):
                 BaseResource.server_error(errorcode.DUPLICATE, **kwargs)
             BaseResource.server_error(errorcode.DATABASE_ERROR, **kwargs)
 
-    def get_users(self, role_name, page, page_size, status=None, key=None, only_show_teacher=False):
+    def get_users(self, role_name, page, page_size, status=None, key=None, only_show_teacher=False,
+                  order_by=None):
         q = User.query.join(role_user_relationship, Role)
         try:
             q = q.filter(Role.name == role_name)
@@ -133,7 +134,9 @@ class UserDatastore(SQLAlchemyUserDatastore):
             if only_show_teacher and role_name == RoleType.teacher:
                 q = q.join(TeacherInfo).filter(TeacherInfo.show == only_show_teacher)
             total = q.count()
-            pagination = q.order_by(User.update_time.desc()).paginate(page, page_size)
+            if not order_by:
+                order_by = User.update_time.desc()
+            pagination = q.order_by(order_by).paginate(page, page_size)
             return total, pagination.items
         except Exception as e:
             current_app.logger.error(e)
