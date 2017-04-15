@@ -134,7 +134,7 @@ class UserDatastore(SQLAlchemyUserDatastore):
             if only_show_teacher and role_name == RoleType.teacher:
                 q = q.join(TeacherInfo).filter(TeacherInfo.show == only_show_teacher)
             total = q.count()
-            if not order_by:
+            if order_by is None:
                 order_by = User.update_time.desc()
             pagination = q.order_by(order_by).paginate(page, page_size)
             return total, pagination.items
