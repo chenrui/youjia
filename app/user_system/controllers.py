@@ -3,6 +3,7 @@ import hashlib
 import xlwt
 import os.path
 import uuid
+from base64 import b64decode
 from StringIO import StringIO
 from datetime import datetime, date, timedelta
 from flask import current_app, request, Response, send_file
@@ -198,7 +199,7 @@ class Account(BaseResource):
             if not user:
                 self.bad_request(errorcode.NOT_FOUND)
         path = os.path.join('profile_photo',
-                            str(user.id) + '-' + uuid.uuid1().get_hex() + '.' + file.filename.rsplit('.', 1)[1])
+                            str(user.id) + '-' + uuid.uuid1().get_hex() + '.png')
         full_path = os.path.join(current_app.config['FILE_STORE_BASE'], path)
         try:
             os.makedirs(os.path.dirname(full_path))
@@ -388,6 +389,7 @@ class Account(BaseResource):
         parser.add_argument('phone', type=PhoneParam.check, required=True, location='json')
         parser.add_argument('parent_phone', type=PhoneParam.check, required=True, location='json')
         parser.add_argument('remark', type=StringParam.check, required=False, location='json', min=1, max=100)
+        parser.add_argument('photo', type=str, required=False, location='json', default=None)
 
         user.phone = self.get_param('phone')
         user.chinese_name = self.get_param('chinese_name')
@@ -408,6 +410,7 @@ class Account(BaseResource):
         if user.password == '':
             user.password = hashlib.md5(user.english_name + '2017').hexdigest().upper()
         user.save()
+        self._save_photo(user, self.get_param('photo'))
         return self.ok('ok')
 
     def _set_teacher_profile(self, parser, user):
@@ -423,6 +426,7 @@ class Account(BaseResource):
         parser.add_argument('success_case', type=StringParam.check, required=True, location='json', min=1, max=200)
         parser.add_argument('feature', type=StringParam.check, required=True, location='json', min=1, max=500)
         parser.add_argument('show', type=bool, required=True, location='json')
+        parser.add_argument('photo', type=str, required=False, location='json', default=None)
 
         phone = self.get_param('phone')
         user.phone = phone if phone else uuid.uuid1().get_hex()
@@ -439,7 +443,29 @@ class Account(BaseResource):
         if user.password == '':
             user.password = hashlib.md5(user.english_name + '2017').hexdigest().upper()
         user.save()
+        self._save_photo(user, self.get_param('photo'))
         return self.ok('ok')
+
+    def _save_photo(self, user, photo_str):
+        if photo_str is None:
+            return
+        path = os.path.join('profile_photo',
+                            str(user.id) + '-' + uuid.uuid1().get_hex() + '.png')
+        full_path = os.path.join(current_app.config['FILE_STORE_BASE'], path)
+        try:
+            os.makedirs(os.path.dirname(full_path))
+        except:
+            pass
+        try:
+            with open(full_path, 'wb') as f:
+                f.write(b64decode(photo_str))
+            old_path = user.photo_path
+            user.photo_path = path
+            user.save()
+            if old_path:
+                os.remove(os.path.join(current_app.config['FILE_STORE_BASE'], old_path))
+        except:
+            pass
 
 
 class History(Account):
