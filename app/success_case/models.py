@@ -23,7 +23,7 @@ class SuccessCase(BaseModel, db.Model):
         try:
             q = cls.query
             if tag:
-                q.filter_by(tag=tag)
+                q.filter(cls.tag.like('%'+tag+'%'))
             total = q.count()
             pagination = q.order_by(cls.update_time.desc()).paginate(page, page_size)
             return total, pagination.items

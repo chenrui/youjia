@@ -93,7 +93,7 @@ class Case(BaseResource):
             datas.append(data)
         return {
             'page_total': page_total(total, page_size),
-            'page_index': page,
+            'page': page,
             'items': datas,
         }
 
@@ -133,7 +133,7 @@ class Case(BaseResource):
             datas.append(data)
         return {
             'page_total': page_total(total, page_size),
-            'page_index': page,
+            'page': page,
             'items': datas,
         }
 

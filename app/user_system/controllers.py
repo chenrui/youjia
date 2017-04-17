@@ -329,7 +329,7 @@ class Account(BaseResource):
                 items.append(info)
         return {
             'page_total': page_total(total, page_size),
-            'page_index': page,
+            'page': page,
             'items': items,
         }
 

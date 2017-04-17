@@ -214,7 +214,7 @@ key: "姓名或手机"
     }
   ],
   "page_total": 1,
-  "page_index": 1
+  "page": 1
 }
 ```
 
@@ -469,7 +469,7 @@ page_size:
       "create_time": "2017-04-14 13:10:59",
     }
   ],
-  "page_index": 1,
+  "page": 1,
   "page_total": 1
 }
 ```
@@ -582,7 +582,7 @@ key: "姓名或手机"
 ```json
 {
 	"page_total": 1,
-	"page_index": 1,
+	"page": 1,
 	"items": [
 	    {
 		  "id": 1001,
@@ -614,7 +614,7 @@ key: "姓名或手机"
 ```json
 {
 	"page_total": 1,
-	"page_index": 1,
+	"page": 1,
 	"items": [
 	    {
 		  "id": 1001,
@@ -701,7 +701,7 @@ key: "姓名或手机"
     }
   ],
  "page_total": 1,
- "page_index": 1
+ "page": 1
 }
 ```
 
@@ -731,7 +731,7 @@ key: "姓名或手机"
     }
   ],
 "page_total": 1,
-"page_index": 1,
+"page": 1,
 }
 ```
 
@@ -847,14 +847,14 @@ key: "姓名或手机"
     }
   ],
   "page_total": 1,
-  "page_index": 1
+  "page": 1
 }
 ```
 
 ##获取案例详情
 | methond | url |
 |:------: |:---:|
-| GET | /api/success_case?page=1&page_size=10 |
+| GET | /api/success_case/detail?page=1&page_size=10 |
 参数
 ```json
 tag:
@@ -881,7 +881,7 @@ case_id:
     }
   ],
   "page_total": 1,
-  "page_index": 1
+  "page": 1
 }
 ```
 

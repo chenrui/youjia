@@ -59,7 +59,7 @@ class CourseResource(BaseResource):
             }
             datas.append(data)
         return {
-            'page_index': page,
+            'page': page,
             'page_total': page_total(total, page_size),
             'items': datas,
         }
@@ -168,7 +168,7 @@ class CourseTB(BaseResource):
             items.append(data)
         return {
             'page_total': page_total(total, page_size),
-            'page_index': page,
+            'page': page,
             'items': items,
         }
 
@@ -194,7 +194,7 @@ class CourseTB(BaseResource):
             items.append(data)
         return {
             'page_total': page_total(total, page_size),
-            'page_index': page,
+            'page': page,
             'items': items,
         }
 
@@ -368,7 +368,7 @@ class Feedback(BaseResource):
             items.append(data)
         return {
             'page_total': page_total(total, page_size),
-            'page_index': page,
+            'page': page,
             'items': items,
         }
 
@@ -395,7 +395,7 @@ class Feedback(BaseResource):
             items.append(data)
         return {
             'page_total': page_total(total, page_size),
-            'page_index': page,
+            'page': page,
             'items': items,
         }
 
