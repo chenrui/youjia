@@ -3,7 +3,7 @@ import hashlib
 import xlwt
 import os.path
 import uuid
-from base64 import b64decode
+from base64 import b64decode, b64encode
 from StringIO import StringIO
 from datetime import datetime, date, timedelta
 from flask import current_app, request, Response, send_file
@@ -353,6 +353,7 @@ class Account(BaseResource):
             'wechat': user.student.weichat,
             'parent_phone': user.student.parent_phone,
             'remark': user.student.remark,
+            'photo': self._get_photo(user)
         }
 
     def _get_teacher_profile(self, user):
@@ -369,6 +370,8 @@ class Account(BaseResource):
             'introduce': user.teacher.introduce,
             'success_case': user.teacher.success_case,
             'feature': user.teacher.feature,
+            'show': user.teacher.show,
+            'photo': self._get_photo(user)
         }
 
     def _set_student_profile(self, parser, user):
@@ -466,6 +469,16 @@ class Account(BaseResource):
                 os.remove(os.path.join(current_app.config['FILE_STORE_BASE'], old_path))
         except:
             pass
+
+    def _get_photo(self, user):
+        if not user.photo_path:
+            return ''
+        path = os.path.join(current_app.config['FILE_STORE_BASE'], user.photo_path)
+        try:
+            data = open(path, 'rb').read()
+            return b64encode(data)
+        except:
+            return ''
 
 
 class History(Account):
