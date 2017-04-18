@@ -124,6 +124,7 @@
 	"phone": "手机号码",
 	"parent_phone": "家长手机号码",
 	"remark": "备注, 可不填"
+	"photo": "base64编码"
 }
 ```
 返回
@@ -152,6 +153,7 @@
 	"success_case": "成功案例",
 	"feature": "个人特色",
 	"show": true/false, 是否在师资力量列表中显示
+	"photo": "base64编码"
 }
 ```
 返回

@@ -177,7 +177,9 @@ class Account(BaseResource):
                 self.bad_request(errorcode.NOT_FOUND)
         path = os.path.join(current_app.config['FILE_STORE_BASE'], user.photo_path)
         try:
-            data = open(path, 'rb').read()
+            f = open(path, 'rb')
+            data = f.read()
+            f.close()
             return Response(data, mimetype='image/png')
         except:
             self.bad_request(errorcode.NOT_FOUND)
@@ -475,7 +477,9 @@ class Account(BaseResource):
             return ''
         path = os.path.join(current_app.config['FILE_STORE_BASE'], user.photo_path)
         try:
-            data = open(path, 'rb').read()
+            f = open(path, 'rb')
+            data = f.read()
+            f.close()
             return b64encode(data)
         except:
             return ''
