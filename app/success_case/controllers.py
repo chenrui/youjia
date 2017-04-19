@@ -78,8 +78,13 @@ class Case(BaseResource):
     def get_list(self):
         parser = self.get_parser()
         self.add_pagination_args(parser)
+        parser.add_argument('order_update_time', type=str, required=False, location='args', default='desc')
         page, page_size = self.get_params('page', 'page_size')
-        total, items = SuccessCase.get_all(page, page_size)
+        if self.get_param('order_update_time') == 'desc':
+            order_by = SuccessCase.update_time.desc()
+        else:
+            order_by = SuccessCase.update_time
+        total, items = SuccessCase.get_all(page, page_size, order_by=order_by)
         datas = []
         for item in items:
             school = item.school if item.school else u'待定'
