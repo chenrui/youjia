@@ -658,7 +658,6 @@ key: "姓名或手机"
 参数
 ```json
 {
-	"chinese_name": "中文名",
 	"study_date": "2017-05-05", 日期
 	"class_time": "8:30-10:00", 上课时间
 	"study_time": "8:00-11:00", 学习时间
@@ -713,7 +712,7 @@ key: "姓名或手机"
 | GET | /api/feedback?user_id=xxxx?page=1&page_size=10 |
 参数
 ```json
-无
+同添加
 ```
 返回
 ```json

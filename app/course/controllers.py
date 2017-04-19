@@ -304,6 +304,10 @@ class Feedback(BaseResource):
         parser.add_argument('user_id', type=int, required=True, location='args')
         fb = StudyFeedback()
         fb.student_id = self.get_param('user_id')
+        user = User.get(id=fb.student_id)
+        if not user:
+            self.bad_request(errorcode.NOT_FOUND)
+        fb.chinese_name = user.chinese_name
         return self.set_feedback(parser, fb)
 
     @roles_accepted(RoleType.admin)
@@ -346,7 +350,14 @@ class Feedback(BaseResource):
     def get_student(self, parser):
         self.add_pagination_args(parser)
         page, page_size = self.get_params('page', 'page_size')
-        total, users = user_datastore.get_users(RoleType.student, page, page_size, 'enabled')
+        parser.add_argument('key', type=unicode, required=False, location='args')
+        parser.add_argument('order_create_time', type=str, required=False, location='args', default='desc')
+        if self.get_param('order_create_time') == 'desc':
+            order_by = User.create_time.desc()
+        else:
+            order_by = User.create_time
+        total, users = user_datastore.get_users(RoleType.student, page, page_size, 'enabled',
+                                                self.get_param('key'), order_by=order_by)
         items = []
         for user in users:
             q = StudyFeedback.query.filter_by(student_id=user.id)
@@ -400,7 +411,6 @@ class Feedback(BaseResource):
         }
 
     def set_feedback(self, parser, fb):
-        parser.add_argument('chinese_name', type=StringParam.check, required=True, location='json', min=1, max=20)
         parser.add_argument('study_date', type=DateParam.check, required=True, location='json')
         parser.add_argument('class_time', type=str, required=True, location='json')
         parser.add_argument('study_time', type=str, required=True, location='json')
@@ -409,7 +419,6 @@ class Feedback(BaseResource):
         parser.add_argument('contents', type=StringParam.check, required=True, location='json', min=1, max=50)
         parser.add_argument('homework', type=StringParam.check, required=True, location='json', min=1, max=75)
         parser.add_argument('feedback', type=StringParam.check, required=True, location='json', min=1, max=125)
-        fb.chinese_name = self.get_param('chinese_name')
         fb.study_date = self.get_param('study_date')
         fb.class_time = self.get_param('class_time')
         fb.study_time = self.get_param('study_time')
