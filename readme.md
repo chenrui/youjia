@@ -433,7 +433,7 @@ key: "姓名或手机"
 ##预约试听
 | methond | url |
 |:------: |:---:|
-| POST | /api/course/apply |
+| POST | /api/course/apply_info |
 参数
 ```json
 {

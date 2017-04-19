@@ -15,7 +15,7 @@ from app.user_system.models import User, Role, role_user_relationship, user_data
 
 class CourseResource(BaseResource):
     def post(self, action=None):
-        if action == 'apply':
+        if action == 'apply_info':
             return self.add_source_apply()
         self.bad_request(errorcode.BAD_REQUEST)
 

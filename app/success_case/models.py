@@ -19,13 +19,15 @@ class SuccessCase(BaseModel, db.Model):
     update_time = db.Column(db.DateTime, default=datetime.now)
 
     @classmethod
-    def get_all(cls, page, page_size, tag=None):
+    def get_all(cls, page, page_size, tag=None, order_by=None):
         try:
             q = cls.query
             if tag:
                 q.filter(cls.tag.like('%'+tag+'%'))
             total = q.count()
-            pagination = q.order_by(cls.update_time.desc()).paginate(page, page_size)
+            if order_by is None:
+                order_by = cls.update_time.desc()
+            pagination = q.order_by(order_by).paginate(page, page_size)
             return total, pagination.items
         except Exception, e:
             current_app.logger.error(e)
