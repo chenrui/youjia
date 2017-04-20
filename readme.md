@@ -579,6 +579,8 @@ page_size:
 page:
 page_size:
 key: "姓名或手机"
+order_create_time: desc/asc
+order_update_time: desc/asc
 ```
 返回
 ```json
@@ -611,6 +613,8 @@ key: "姓名或手机"
 page:
 page_size:
 key: "姓名或手机"
+order_create_time: desc/asc
+order_update_time: desc/asc
 ```
 返回
 ```json
@@ -712,7 +716,7 @@ order_create_time=desc/asc
 | GET | /api/feedback?user_id=xxxx?page=1&page_size=10 |
 参数
 ```json
-同添加
+无
 ```
 返回
 ```json
@@ -742,7 +746,7 @@ order_create_time=desc/asc
 | PUT | /api/feedback?fb_id=xxx |
 参数
 ```json
-无
+同添加
 ```
 返回
 ```json

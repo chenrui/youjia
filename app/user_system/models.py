@@ -32,6 +32,7 @@ class User(BaseModel, db.Model, UserMixin):
     photo_path = db.Column(db.String(255))
     update_time = db.Column(db.DateTime, default=datetime.now)
     create_time = db.Column(db.DateTime, default=datetime.now)
+    coursetb_update_time = db.Column(db.DateTime, default=datetime.now)
     verify_token = db.Column(db.String(32), default='')
     status = db.Column(db.String(10))
     roles = db.relationship('Role', secondary=role_user_relationship,

@@ -145,14 +145,26 @@ class CourseTB(BaseResource):
         parser = self.get_parser()
         self.add_pagination_args(parser)
         parser.add_argument('key', type=StringParam.check, required=False, location='args', min=1, max=20)
+        parser.add_argument('order_create_time', type=str, required=False, location='args')
+        parser.add_argument('order_update_time', type=str, required=False, location='args')
         page, page_size, key = self.get_params('page', 'page_size', 'key')
-        total, users = user_datastore.get_users(RoleType.student, page, page_size, 'enabled', key)
+        order_create_time = self.get_param('order_create_time')
+        order_update_time = self.get_param('order_update_time')
+        if order_create_time == 'desc':
+            order_by = User.create_time.desc()
+        elif order_create_time == 'asc':
+            order_by = User.create_time
+        elif order_update_time == 'desc':
+            order_by = User.coursetb_update_time.desc()
+        elif order_update_time:
+            order_by = User.coursetb_update_time
+        else:
+            order_by = None
+        total, users = user_datastore.get_users(RoleType.student, page, page_size, 'enabled', key, order_by=order_by)
         items = []
         for user in users:
-            tbs = CourseTable.query.filter_by(student_id=user.id).\
-                order_by(CourseTable.update_time.desc()).paginate(1, 1).items
-            status = u'已创建' if len(tbs) != 0 else u'未创建'
-            update_time = tbs[0].update_time.strftime('%Y-%m-%d') if len(tbs) != 0 else ''
+            count = CourseTable.query.filter_by(student_id=user.id).count()
+            status = u'已创建' if count != 0 else u'未创建'
             data = {
                 'id': user.id,
                 'chinese_name': user.chinese_name,
@@ -163,7 +175,7 @@ class CourseTB(BaseResource):
                 'phone': user.phone,
                 'status': status,
                 'create_time': user.create_time.strftime('%Y-%m-%d'),
-                'update_time': update_time,
+                'update_time': user.coursetb_update_time.strftime('%Y-%m-%d'),
             }
             items.append(data)
         return {
@@ -177,19 +189,31 @@ class CourseTB(BaseResource):
         parser = self.get_parser()
         self.add_pagination_args(parser)
         parser.add_argument('key', type=StringParam.check, required=False, location='args', min=1, max=20)
+        parser.add_argument('order_create_time', type=str, required=False, location='args')
+        parser.add_argument('order_update_time', type=str, required=False, location='args')
         page, page_size, key = self.get_params('page', 'page_size', 'key')
-        total, users = user_datastore.get_users(RoleType.teacher, page, page_size, 'enabled', key)
+        order_create_time = self.get_param('order_create_time')
+        order_update_time = self.get_param('order_update_time')
+        if order_create_time == 'desc':
+            order_by = User.create_time.desc()
+        elif order_create_time == 'asc':
+            order_by = User.create_time
+        elif order_update_time == 'desc':
+            order_by = User.coursetb_update_time.desc()
+        elif order_update_time:
+            order_by = User.coursetb_update_time
+        else:
+            order_by = None
+        total, users = user_datastore.get_users(RoleType.teacher, page, page_size, 'enabled', key, order_by=order_by)
         items = []
         for user in users:
-            tbs = CourseTable.query.filter_by(teacher_id=user.id).\
-                order_by(CourseTable.update_time.desc()).paginate(1, 1).items
-            status = u'已创建' if len(tbs) != 0 else u'未创建'
-            update_time = tbs[0].update_time.strftime('%Y-%m-%d') if len(tbs) != 0 else ''
+            count = CourseTable.query.filter_by(teacher_id=user.id).count()
+            status = u'已创建' if count != 0 else u'未创建'
             data = {
                 'id': user.id,
                 'chinese_name': user.chinese_name,
                 'status': status,
-                'update_time': update_time,
+                'update_time': user.coursetb_update_time.strftime('%Y-%m-%d'),
             }
             items.append(data)
         return {
@@ -228,7 +252,9 @@ class CourseTB(BaseResource):
         parser.add_argument('stop_time', type=str, required=True, location='json')
         course_name, teacher_id, student_id = \
             self.get_params('course_name', 'teacher_user_id', 'student_user_id')
-        if not User.get(id=teacher_id) or not User.get(id=student_id):
+        teacher = User.get(id=teacher_id)
+        student = User.get(id=student_id)
+        if not teacher or not student:
             self.bad_request(errorcode.BAD_REQUEST)
         day, start_time, stop_time = self.get_params('day', 'start_time', 'stop_time')
         user_ids = self._get_not_available_user_ids(day, start_time, stop_time)
@@ -254,6 +280,10 @@ class CourseTB(BaseResource):
         else:
             tb.time_type = 6
         tb.save()
+        teacher.coursetb_update_time = datetime.now()
+        student.coursetb_update_time = datetime.now()
+        teacher.save()
+        student.save()
         return self.ok('ok')
 
     @roles_accepted(RoleType.admin)
@@ -276,6 +306,13 @@ class CourseTB(BaseResource):
         tb.teacher_id = teacher_id
         tb.update_time = datetime.now()
         tb.save()
+        teacher = User.get(id=teacher_id)
+        student = User.get(id=tb.student_id)
+        teacher.coursetb_update_time = datetime.now()
+        student.coursetb_update_time = datetime.now()
+        teacher.save()
+        student.save()
+        return self.ok('ok')
 
     def _get_not_available_user_ids(self, day, start, stop, role_name=None):
         tbs = CourseTable.query.filter_by(day=day, start_time=start, stop_time=stop).all()
