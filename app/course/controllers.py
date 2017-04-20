@@ -101,10 +101,18 @@ class CourseTB(BaseResource):
     @roles_accepted(RoleType.admin)
     def delete(self, action=None):
         parser = self.get_parser()
-        parser.add_argument('table_id', type=int, required=True, location='args')
-        tb = CourseTable.get(id=self.get_param('table_id'))
-        if tb:
-            tb.delete()
+        parser.add_argument('table_id', type=int, required=False, location='args')
+        parser.add_argument('user_id', type=int, required=False, location='args')
+        table_id = self.get_param('table_id')
+        user_id = self.get_param('user_id')
+        if table_id:
+            tb = CourseTable.get(id=table_id)
+            if tb:
+                tb.delete()
+        elif user_id:
+            tbs = CourseTable.query.filter_by(student_id=user_id).all()
+            for tb in tbs:
+                tb.delete()
         return self.ok('ok')
 
     @login_required

@@ -340,7 +340,7 @@ show: true/false  是否只显示师资力量的老师, 默认为false
     "feedback": [
 	  {
 	      "chinese_name": "中文名",
-	      "class_time": "8:30-10:00",
+	      "class_time": "8:30",
 	      "contents": "课程内容",
 	      "course_name": "托福",
 	      "feedback": "课堂反馈",
@@ -537,9 +537,10 @@ page_size:
 ```
 
 ##删除课程
-| methond | url |
-|:------: |:---:|
-| DELETE | /api/coursetable?table_id=xxx |
+| methond | url | 说明 |
+|:------: |:---:|:---:|
+| DELETE | /api/coursetable?table_id=xxx | 删除单个
+| DELETE | /api/coursetable?user_id=xxx | 删除全部
 参数
 ```json
 无
@@ -663,7 +664,7 @@ order_update_time: desc/asc
 ```json
 {
 	"study_date": "2017-05-05", 日期
-	"class_time": "8:30-10:00", 上课时间
+	"class_time": "8:30", 上课时间
 	"leave_time": "11:00",      离开时间
 	"course_name": "托福",       课程类型
 	"section": "听 说 读 写",     授课范围
@@ -724,7 +725,7 @@ order_create_time=desc/asc
   "items": [
     {
       "chinese_name": "中文名",
-      "class_time": "8:30-10:00",
+      "class_time": "8:30",
       "contents": "课程内容",
       "course_name": "托福",
       "feedback": "课堂反馈",
