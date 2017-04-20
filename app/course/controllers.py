@@ -400,7 +400,7 @@ class Feedback(BaseResource):
             q = StudyFeedback.query.filter_by(student_id=user.id)
             count = q.count()
             fbs = q.order_by(StudyFeedback.study_date.desc()).paginate(1, 1).items
-            update_time = fbs[0].update_time.strftime('%Y-%m-%d') if count != 0 else ''
+            update_time = fbs[0].update_time.strftime('%Y-%m-%d') if count != 0 else '-'
             data = {
                 'id': user.id,
                 'chinese_name': user.chinese_name,
@@ -433,7 +433,7 @@ class Feedback(BaseResource):
                 'chinese_name': fb.chinese_name,
                 'study_date': fb.study_date.strftime('%Y-%m-%d'),
                 'class_time': fb.class_time,
-                'study_time': fb.study_time,
+                'leave_time': fb.study_time,
                 'course_name': fb.course_name,
                 'section': fb.section,
                 'contents': fb.contents,
@@ -450,7 +450,7 @@ class Feedback(BaseResource):
     def set_feedback(self, parser, fb):
         parser.add_argument('study_date', type=DateParam.check, required=True, location='json')
         parser.add_argument('class_time', type=str, required=True, location='json')
-        parser.add_argument('study_time', type=str, required=True, location='json')
+        parser.add_argument('leave_time', type=str, required=True, location='json')
         parser.add_argument('course_name', type=StringParam.check, required=True, location='json', min=1, max=20)
         parser.add_argument('section', type=StringParam.check, required=True, location='json', min=1, max=20)
         parser.add_argument('contents', type=StringParam.check, required=True, location='json', min=1, max=50)
@@ -458,7 +458,7 @@ class Feedback(BaseResource):
         parser.add_argument('feedback', type=StringParam.check, required=True, location='json', min=1, max=125)
         fb.study_date = self.get_param('study_date')
         fb.class_time = self.get_param('class_time')
-        fb.study_time = self.get_param('study_time')
+        fb.study_time = self.get_param('leave_time')
         fb.course_name = self.get_param('course_name')
         fb.section = self.get_param('section')
         fb.contents = self.get_param('contents')
@@ -544,7 +544,7 @@ def export_feedback(user, sheetname='学习反馈', wb=None):
     q = StudyFeedback.query.filter_by(student_id=user.id)
     fbs = q.order_by(StudyFeedback.study_date.desc()).all()
     column0 = [u'中文名称', u'上课时间', u'课程类型']
-    column2 = [u'日期', u'学习时间', u'授课范围']
+    column2 = [u'日期', u'离校时间', u'授课范围']
     for fb in fbs:
         study_date = fb.study_date.strftime('%Y-%m-%d')
         sheetname = sheetname + study_date

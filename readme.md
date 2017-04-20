@@ -347,7 +347,7 @@ show: true/false  是否只显示师资力量的老师, 默认为false
 	      "homework": "课后作业",
 	      "section": "听 说 读 写",
 	      "study_date": "2017-05-05",
-	      "study_time": "8:00-11:00"
+	      "leave_time": "11:00"
       },
       ...
    ]
@@ -664,7 +664,7 @@ order_update_time: desc/asc
 {
 	"study_date": "2017-05-05", 日期
 	"class_time": "8:30-10:00", 上课时间
-	"study_time": "8:00-11:00", 学习时间
+	"leave_time": "11:00",      离开时间
 	"course_name": "托福",       课程类型
 	"section": "听 说 读 写",     授课范围
 	"contents": "课程内容",
@@ -732,7 +732,7 @@ order_create_time=desc/asc
       "id": 1,
       "section": "听 说 读 写",
       "study_date": "2017-05-05",
-      "study_time": "8:00-11:00"
+      "leave_time": "11:00"
     }
   ],
 "page_total": 1,
