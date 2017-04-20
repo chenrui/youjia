@@ -240,7 +240,7 @@ class Account(BaseResource):
         data['feedback'] = [{'chinese_name': fb.chinese_name,
                              'study_date': fb.study_date.strftime('%Y-%m-%d'),
                              'class_time': fb.class_time,
-                             'study_time': fb.study_time,
+                             'leave_time': fb.study_time,
                              'course_name': fb.course_name,
                              'section': fb.section,
                              'contents': fb.contents,
