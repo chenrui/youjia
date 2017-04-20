@@ -423,6 +423,9 @@ class Feedback(BaseResource):
     def get_feedback(self, parser, user_id):
         self.add_pagination_args(parser)
         page, page_size = self.get_params('page', 'page_size')
+        user = User.get(id=user_id)
+        if not user:
+            self.bad_request(errorcode.NOT_FOUND)
         q = StudyFeedback.query.filter_by(student_id=user_id)
         total = q.count()
         fbs = q.order_by(StudyFeedback.study_date.desc()).paginate(page, page_size).items
@@ -445,6 +448,7 @@ class Feedback(BaseResource):
             'page_total': page_total(total, page_size),
             'page': page,
             'items': items,
+            'chinese_name': user.chinese_name,
         }
 
     def set_feedback(self, parser, fb):
