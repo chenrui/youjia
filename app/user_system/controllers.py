@@ -28,6 +28,8 @@ class Account(BaseResource):
             return self.login()
         elif action == 'verify':
             return self.verify()
+        elif action == 'check_password':
+            return self.check_password()
         elif action == 'reset_password':
             return self.reset_password()
         elif action == 'photo':
@@ -102,6 +104,14 @@ class Account(BaseResource):
         user.verify_token = uuid.uuid1().get_hex()
         user.save()
         return {'token': user.verify_token}
+
+    @login_required
+    def check_password(self):
+        parser = self.get_parser()
+        parser.add_argument('password', type=StringParam.check, required=True, location='json', min=6, max=20)
+        if current_user.password != hashlib.md5(self.get_param('password')).hexdigest().upper():
+            self.bad_request(errorcode.INVALID_USER)
+        return self.ok('ok')
 
     def reset_password(self):
         parser = self.get_parser()

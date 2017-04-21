@@ -100,6 +100,23 @@
 }
 ```
 
+##验证密码
+| methond | url |
+|:------: |:---:|
+| POST | /api/account/check_password |
+参数
+```json
+{
+	"password": "密码"
+}
+```
+返回
+```json
+{
+	"message": "返回消息",
+	"status_code": 200
+}
+```
 
 ##添加学生
 | methond | url |
