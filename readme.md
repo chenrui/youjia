@@ -215,6 +215,7 @@
 page:
 page_size:
 key: "姓名或手机"
+order_update_time: "asc/desc"
 ```
 返回
 ```json
@@ -246,6 +247,7 @@ key: "姓名或手机"
 page:
 page_size:
 key: "姓名或手机"
+order_update_time: "asc/desc"
 show: true/false  是否只显示师资力量的老师, 默认为false
 ```
 返回
