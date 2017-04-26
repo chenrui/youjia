@@ -76,14 +76,15 @@ class Account(BaseResource):
         phone, password = self.get_params('phone', 'password')
         password = hashlib.md5(password).hexdigest().upper()
         user = user_datastore.find_user(phone=phone)
-        if not user or user.password != password or user.has_role(RoleType.teacher):
+        if not user or user.password != password or not (user.has_role(RoleType.admin) or user.has_role(RoleType.student)):
             self.bad_request(errorcode.INVALID_USER)
         login_user(user, True)
         user.last_login_time = datetime.now()
         user.save()
+        role_name = RoleType.admin if len(user.roles) > 1 else user.roles[0].name
         return {
             'id': user.id,
-            'role': user.roles[0].name,
+            'role': role_name,
             'chinese_name': user.chinese_name,
             'english_name': user.english_name
         }
