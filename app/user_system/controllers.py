@@ -292,7 +292,7 @@ class Account(BaseResource):
             return self._get_student_profile(user)
         elif user.has_role(RoleType.teacher):
             return self._get_teacher_profile(user)
-        return self.bad_request(errorcode.BAD_REQUEST)
+        return self.ok('ok')
 
     def get_users(self, role_name, status):
         parser = self.get_parser()
