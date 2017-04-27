@@ -64,7 +64,9 @@ class PhoneParam(ParamValidation):
     type_str = 'string'
 
     def validate_value(self, value, args):
-        return re.match(r'^[0-9]{11}$', value) is not None
+        if value:
+            return re.match(r'^[0-9]{11}$', value) is not None
+        return True
 
     def get_err_msg(self):
         return 'not an phone number format'
@@ -106,11 +108,13 @@ class DateParam(ParamValidation):
     type_str = 'string'
 
     def validate_value(self, value, args):
-        try:
-            datetime.strptime(value, '%Y-%m-%d')
-            return True
-        except:
-            return False
+        if value:
+            try:
+                datetime.strptime(value, '%Y-%m-%d')
+                return True
+            except:
+                return False
+        return True
 
     def get_err_msg(self):
         return 'not a date like 2016-01-01 format'
