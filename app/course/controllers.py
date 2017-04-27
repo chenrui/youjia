@@ -33,7 +33,7 @@ class CourseResource(BaseResource):
         parser = self.get_parser()
         parser.add_argument('phone', type=PhoneParam.check, required=True, location='json')
         parser.add_argument('name', type=StringParam.check, required=True, location='json', min=1, max=20)
-        parser.add_argument('teacher', type=StringParam.check, required=False, location='json', min=1, max=20,
+        parser.add_argument('teacher', type=StringParam.check, required=False, location='json', min=0, max=20,
                             default='')
         ca = CourseApply()
         ca.phone = self.get_param('phone')
@@ -152,7 +152,7 @@ class CourseTB(BaseResource):
     def get_students(self):
         parser = self.get_parser()
         self.add_pagination_args(parser)
-        parser.add_argument('key', type=StringParam.check, required=False, location='args', min=1, max=20)
+        parser.add_argument('key', type=StringParam.check, required=False, location='args', min=0, max=20)
         parser.add_argument('order_create_time', type=str, required=False, location='args')
         parser.add_argument('order_update_time', type=str, required=False, location='args')
         page, page_size, key = self.get_params('page', 'page_size', 'key')
@@ -196,7 +196,7 @@ class CourseTB(BaseResource):
     def get_teachers(self):
         parser = self.get_parser()
         self.add_pagination_args(parser)
-        parser.add_argument('key', type=StringParam.check, required=False, location='args', min=1, max=20)
+        parser.add_argument('key', type=StringParam.check, required=False, location='args', min=0, max=20)
         parser.add_argument('order_create_time', type=str, required=False, location='args')
         parser.add_argument('order_update_time', type=str, required=False, location='args')
         page, page_size, key = self.get_params('page', 'page_size', 'key')
