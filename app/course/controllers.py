@@ -143,8 +143,10 @@ class CourseTB(BaseResource):
             }
             if user.has_role(RoleType.teacher):
                 data['chinese_name'] = User.get(id=tb.student_id).chinese_name
+                data['student_user_id'] = tb.student_id
             else:
                 data['chinese_name'] = User.get(id=tb.teacher_id).chinese_name
+                data['teacher_user_id'] = tb.teacher_id
             items.append(data)
         return items
 
