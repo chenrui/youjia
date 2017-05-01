@@ -425,7 +425,8 @@ class Account(BaseResource):
         user.student.remark = self.get_param('remark', '')
         if user.password == '':
             user.password = hashlib.md5(user.english_name + '2017').hexdigest().upper()
-        user.save()
+        user_datastore.put(user)
+        user_datastore.commit()
         self._save_photo(user, self.get_param('photo'))
         return self.ok('ok')
 
@@ -458,7 +459,8 @@ class Account(BaseResource):
         user.teacher.show = self.get_param('show')
         if user.password == '':
             user.password = hashlib.md5(user.english_name + '2017').hexdigest().upper()
-        user.save()
+        user_datastore.put(user)
+        user_datastore.commit()
         self._save_photo(user, self.get_param('photo'))
         return self.ok('ok')
 
