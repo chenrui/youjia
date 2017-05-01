@@ -389,7 +389,7 @@ class Account(BaseResource):
 
     def _set_student_profile(self, parser, user):
         parser.add_argument('chinese_name', type=StringParam.check, required=True, location='json', min=1, max=20)
-        parser.add_argument('english_name', type=StringParam.check, required=True, location='json', min=1, max=20)
+        parser.add_argument('english_name', type=StringParam.check, required=True, location='json', min=2, max=16)
         parser.add_argument('sexual', type=unicode, required=False, location='json')
         parser.add_argument('location', type=StringParam.check, required=True, location='json', min=1, max=10)
         parser.add_argument('age', type=str, required=False, location='json')
@@ -432,7 +432,7 @@ class Account(BaseResource):
 
     def _set_teacher_profile(self, parser, user):
         parser.add_argument('chinese_name', type=StringParam.check, required=True, location='json', min=1, max=20)
-        parser.add_argument('english_name', type=StringParam.check, required=True, location='json', min=1, max=20)
+        parser.add_argument('english_name', type=StringParam.check, required=True, location='json', min=2, max=16)
         parser.add_argument('graduated', type=StringParam.check, required=True, location='json', min=1, max=20)
         parser.add_argument('major', type=StringParam.check, required=True, location='json', min=1, max=20)
         parser.add_argument('country', type=StringParam.check, required=True, location='json', min=1, max=20)
