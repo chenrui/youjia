@@ -86,7 +86,7 @@ class StudentInfo(BaseModel, db.Model):
     study_country = db.Column(db.String(10))
     enrollment_time = db.Column(db.String(10), default='')
     major = db.Column(db.String(20))
-    course_name = db.Column(db.String(20))
+    course_name = db.Column(db.String(100))
     learn_range = db.Column(db.String(40))
     weichat = db.Column(db.String(20), default='')
     parent_phone = db.Column(db.String(16))
