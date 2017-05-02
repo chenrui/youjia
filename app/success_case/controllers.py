@@ -139,6 +139,7 @@ class Case(BaseResource):
         return {
             'page_total': page_total(total, page_size),
             'page': page,
+            'total': total,
             'items': datas,
         }
 

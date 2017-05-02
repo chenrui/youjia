@@ -23,7 +23,7 @@ class SuccessCase(BaseModel, db.Model):
         try:
             q = cls.query
             if tag:
-                q.filter(cls.tag.like('%'+tag+'%'))
+                q = q.filter(cls.tag.like('%'+tag+'%'))
             total = q.count()
             if order_by is None:
                 order_by = cls.update_time.desc()
