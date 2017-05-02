@@ -15,7 +15,7 @@ class SuccessCase(BaseModel, db.Model):
     test3 = db.Column(db.String(20), default='')
     score3 = db.Column(db.String(20), default='')
     feeling = db.Column(db.String(200))
-    comment = db.Column(db.String(200))
+    comment = db.Column(db.String(400))
     update_time = db.Column(db.DateTime, default=datetime.now)
 
     @classmethod

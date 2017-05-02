@@ -58,7 +58,7 @@ class Case(BaseResource):
         parser.add_argument('test3', type=StringParam.check, required=False, location='json', min=0, max=20)
         parser.add_argument('score3', type=StringParam.check, required=False, location='json', min=0, max=20)
         parser.add_argument('feeling', type=StringParam.check, required=True, location='json', min=1, max=200)
-        parser.add_argument('comment', type=StringParam.check, required=True, location='json', min=1, max=200)
+        parser.add_argument('comment', type=StringParam.check, required=True, location='json', min=1, max=400)
         case.chinese_name = self.get_param('chinese_name')
         case.tag = self.get_param('tag')
         case.school = self.get_param('school')
