@@ -297,7 +297,7 @@ class Account(BaseResource):
     def get_users(self, role_name, status):
         parser = self.get_parser()
         self.add_pagination_args(parser)
-        parser.add_argument('key', type=StringParam.check, required=False, location='args', min=1, max=20)
+        parser.add_argument('key', type=StringParam.check, required=False, location='args', min=0, max=20)
         parser.add_argument('order_update_time', type=str, required=False, location='args', default='desc')
         parser.add_argument('show', type=str, required=False, location='args', default='false')
         page, page_size, key = self.get_params('page', 'page_size', 'key')
@@ -389,22 +389,22 @@ class Account(BaseResource):
 
     def _set_student_profile(self, parser, user):
         parser.add_argument('chinese_name', type=StringParam.check, required=True, location='json', min=1, max=20)
-        parser.add_argument('english_name', type=StringParam.check, required=True, location='json', min=1, max=20)
-        parser.add_argument('sexual', type=unicode, required=False, location='json', choices=(u'男', u'女'))
+        parser.add_argument('english_name', type=StringParam.check, required=True, location='json', min=2, max=16)
+        parser.add_argument('sexual', type=unicode, required=False, location='json')
         parser.add_argument('location', type=StringParam.check, required=True, location='json', min=1, max=10)
         parser.add_argument('age', type=str, required=False, location='json')
         parser.add_argument('school', type=StringParam.check, required=True, location='json', min=1, max=20)
-        parser.add_argument('grade', type=StringParam.check, required=True, location='json', min=1, max=20)
+        parser.add_argument('grade', type=StringParam.check, required=False, location='json', min=0, max=20)
         parser.add_argument('study_country', type=StringParam.check, required=True, location='json', min=1, max=10)
         parser.add_argument('enrollment_time', type=DateParam.check, required=False, location='json')
-        parser.add_argument('major', type=StringParam.check, required=False, location='json', min=1, max=20)
+        parser.add_argument('major', type=StringParam.check, required=False, location='json', min=0, max=20)
         parser.add_argument('course_name', type=StringParam.check, required=True, location='json', min=1, max=100)
         parser.add_argument('learn_range', type=StringParam.check, required=True, location='json', min=1, max=40)
-        parser.add_argument('wechat', type=StringParam.check, required=False, location='json', min=1, max=20,
+        parser.add_argument('wechat', type=StringParam.check, required=False, location='json', min=0, max=20,
                             default='')
         parser.add_argument('phone', type=PhoneParam.check, required=True, location='json')
         parser.add_argument('parent_phone', type=PhoneParam.check, required=True, location='json')
-        parser.add_argument('remark', type=StringParam.check, required=False, location='json', min=1, max=100)
+        parser.add_argument('remark', type=StringParam.check, required=False, location='json', min=0, max=100)
         parser.add_argument('photo', type=str, required=False, location='json', default=None)
 
         user.phone = self.get_param('phone')
@@ -416,7 +416,7 @@ class Account(BaseResource):
         param = self.get_param('age')
         user.student.age = param if param else ''
         user.student.school = self.get_param('school')
-        user.student.grade = self.get_param('grade')
+        user.student.grade = self.get_param('grade', '')
         user.student.study_country = self.get_param('study_country')
         param = self.get_param('enrollment_time')
         user.student.enrollment_time = param if param else ''
@@ -431,18 +431,19 @@ class Account(BaseResource):
         user.student.remark = param if param else ''
         if user.password == '':
             user.password = hashlib.md5(user.english_name + '2017').hexdigest().upper()
-        user.save()
+        user_datastore.put(user)
+        user_datastore.commit()
         self._save_photo(user, self.get_param('photo'))
         return self.ok('ok')
 
     def _set_teacher_profile(self, parser, user):
         parser.add_argument('chinese_name', type=StringParam.check, required=True, location='json', min=1, max=20)
-        parser.add_argument('english_name', type=StringParam.check, required=True, location='json', min=1, max=20)
+        parser.add_argument('english_name', type=StringParam.check, required=True, location='json', min=2, max=16)
         parser.add_argument('graduated', type=StringParam.check, required=True, location='json', min=1, max=20)
         parser.add_argument('major', type=StringParam.check, required=True, location='json', min=1, max=20)
         parser.add_argument('country', type=StringParam.check, required=True, location='json', min=1, max=20)
         parser.add_argument('phone', type=PhoneParam.check, required=False, location='json')
-        parser.add_argument('wechat', type=StringParam.check, required=False, location='json', min=1, max=20,
+        parser.add_argument('wechat', type=StringParam.check, required=False, location='json', min=0, max=20,
                             default='')
         parser.add_argument('introduce', type=StringParam.check, required=True, location='json', min=1, max=200)
         parser.add_argument('success_case', type=StringParam.check, required=True, location='json', min=1, max=200)
@@ -465,7 +466,8 @@ class Account(BaseResource):
         user.teacher.show = self.get_param('show')
         if user.password == '':
             user.password = hashlib.md5(user.english_name + '2017').hexdigest().upper()
-        user.save()
+        user_datastore.put(user)
+        user_datastore.commit()
         self._save_photo(user, self.get_param('photo'))
         return self.ok('ok')
 
@@ -542,17 +544,17 @@ class History(Account):
         parser = self.get_parser()
         parser.add_argument('user_id', type=int, required=True, location='args')
         parser.add_argument('test1', type=StringParam.check, required=True, location='json', min=1, max=20)
-        parser.add_argument('test2', type=StringParam.check, required=False, location='json', min=1, max=20)
-        parser.add_argument('test3', type=StringParam.check, required=False, location='json', min=1, max=20)
-        parser.add_argument('test4', type=StringParam.check, required=False, location='json', min=1, max=20)
-        parser.add_argument('test5', type=StringParam.check, required=False, location='json', min=1, max=20)
+        parser.add_argument('test2', type=StringParam.check, required=False, location='json', min=0, max=20)
+        parser.add_argument('test3', type=StringParam.check, required=False, location='json', min=0, max=20)
+        parser.add_argument('test4', type=StringParam.check, required=False, location='json', min=0, max=20)
+        parser.add_argument('test5', type=StringParam.check, required=False, location='json', min=0, max=20)
         parser.add_argument('score1', type=str, required=True, location='json')
         parser.add_argument('score2', type=str, required=False, location='json')
         parser.add_argument('score3', type=str, required=False, location='json')
         parser.add_argument('score4', type=str, required=False, location='json')
         parser.add_argument('score5', type=str, required=False, location='json')
         parser.add_argument('admission_school', type=StringParam.check, required=True, location='json', min=1, max=20)
-        parser.add_argument('admission_major', type=StringParam.check, required=False, location='json', min=1, max=20)
+        parser.add_argument('admission_major', type=StringParam.check, required=False, location='json', min=0, max=20)
         user_id = self.get_param('user_id')
         user = User.get(id=user_id)
         if not user.has_role(RoleType.student):

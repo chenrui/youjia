@@ -33,7 +33,7 @@ class CourseResource(BaseResource):
         parser = self.get_parser()
         parser.add_argument('phone', type=PhoneParam.check, required=True, location='json')
         parser.add_argument('name', type=StringParam.check, required=True, location='json', min=1, max=20)
-        parser.add_argument('teacher', type=StringParam.check, required=False, location='json', min=1, max=20,
+        parser.add_argument('teacher', type=StringParam.check, required=False, location='json', min=0, max=20,
                             default='')
         ca = CourseApply()
         ca.phone = self.get_param('phone')
@@ -143,8 +143,10 @@ class CourseTB(BaseResource):
             }
             if user.has_role(RoleType.teacher):
                 data['chinese_name'] = User.get(id=tb.student_id).chinese_name
+                data['student_user_id'] = tb.student_id
             else:
                 data['chinese_name'] = User.get(id=tb.teacher_id).chinese_name
+                data['teacher_user_id'] = tb.teacher_id
             items.append(data)
         return items
 
@@ -152,7 +154,7 @@ class CourseTB(BaseResource):
     def get_students(self):
         parser = self.get_parser()
         self.add_pagination_args(parser)
-        parser.add_argument('key', type=StringParam.check, required=False, location='args', min=1, max=20)
+        parser.add_argument('key', type=StringParam.check, required=False, location='args', min=0, max=20)
         parser.add_argument('order_create_time', type=str, required=False, location='args')
         parser.add_argument('order_update_time', type=str, required=False, location='args')
         page, page_size, key = self.get_params('page', 'page_size', 'key')
@@ -196,7 +198,7 @@ class CourseTB(BaseResource):
     def get_teachers(self):
         parser = self.get_parser()
         self.add_pagination_args(parser)
-        parser.add_argument('key', type=StringParam.check, required=False, location='args', min=1, max=20)
+        parser.add_argument('key', type=StringParam.check, required=False, location='args', min=0, max=20)
         parser.add_argument('order_create_time', type=str, required=False, location='args')
         parser.add_argument('order_update_time', type=str, required=False, location='args')
         page, page_size, key = self.get_params('page', 'page_size', 'key')
