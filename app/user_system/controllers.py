@@ -398,7 +398,7 @@ class Account(BaseResource):
         parser.add_argument('study_country', type=StringParam.check, required=True, location='json', min=1, max=10)
         parser.add_argument('enrollment_time', type=DateParam.check, required=False, location='json')
         parser.add_argument('major', type=StringParam.check, required=False, location='json', min=1, max=20)
-        parser.add_argument('course_name', type=StringParam.check, required=True, location='json', min=1, max=20)
+        parser.add_argument('course_name', type=StringParam.check, required=True, location='json', min=1, max=100)
         parser.add_argument('learn_range', type=StringParam.check, required=True, location='json', min=1, max=40)
         parser.add_argument('wechat', type=StringParam.check, required=False, location='json', min=1, max=20,
                             default='')
@@ -410,19 +410,25 @@ class Account(BaseResource):
         user.phone = self.get_param('phone')
         user.chinese_name = self.get_param('chinese_name')
         user.english_name = self.get_param('english_name')
-        user.student.sexual = self.get_param('sexual', '')
+        param = self.get_param('sexual')
+        user.student.sexual = param if param else ''
         user.student.location = self.get_param('location')
-        user.student.age = self.get_param('age', '')
+        param = self.get_param('age')
+        user.student.age = param if param else ''
         user.student.school = self.get_param('school')
         user.student.grade = self.get_param('grade')
         user.student.study_country = self.get_param('study_country')
-        user.student.enrollment_time = self.get_param('enrollment_time', '')
-        user.student.major = self.get_param('major', '')
+        param = self.get_param('enrollment_time')
+        user.student.enrollment_time = param if param else ''
+        param = self.get_param('major')
+        user.student.major = param if param else ''
         user.student.course_name = self.get_param('course_name')
         user.student.learn_range = self.get_param('learn_range')
-        user.student.weichat = self.get_param('wechat')
+        param = self.get_param('wechat')
+        user.student.weichat = param if param else ''
         user.student.parent_phone = self.get_param('parent_phone')
-        user.student.remark = self.get_param('remark', '')
+        param = self.get_param('remark')
+        user.student.remark = param if param else ''
         if user.password == '':
             user.password = hashlib.md5(user.english_name + '2017').hexdigest().upper()
         user.save()
@@ -451,7 +457,8 @@ class Account(BaseResource):
         user.teacher.graduated = self.get_param('graduated')
         user.teacher.major = self.get_param('major')
         user.teacher.country = self.get_param('country')
-        user.teacher.weichat = self.get_param('wechat')
+        param = self.get_param('wechat')
+        user.teacher.weichat = param if param else ''
         user.teacher.introduce = self.get_param('introduce')
         user.teacher.success_case = self.get_param('success_case')
         user.teacher.feature = self.get_param('feature')
@@ -553,17 +560,26 @@ class History(Account):
         user.status = 'filed'
         user.update_time = datetime.now()
         user.student.test1 = self.get_param('test1')
-        user.student.test2 = self.get_param('test2', '')
-        user.student.test3 = self.get_param('test3', '')
-        user.student.test4 = self.get_param('test4', '')
-        user.student.test5 = self.get_param('test5', '')
+        param = self.get_param('test2')
+        user.student.test2 = param if param else ''
+        param = self.get_param('test3')
+        user.student.test3 = param if param else ''
+        param = self.get_param('test4')
+        user.student.test4 = param if param else ''
+        param = self.get_param('test5')
+        user.student.test5 = param if param else ''
         user.student.score1 = self.get_param('score1')
-        user.student.score2 = self.get_param('score2', '')
-        user.student.score3 = self.get_param('score3', '')
-        user.student.score4 = self.get_param('score4', '')
-        user.student.score5 = self.get_param('score5', '')
+        param = self.get_param('score2')
+        user.student.score2 = param if param else ''
+        param = self.get_param('score3')
+        user.student.score3 = param if param else ''
+        param = self.get_param('score4')
+        user.student.score4 = param if param else ''
+        param = self.get_param('score5')
+        user.student.score5 = param if param else ''
         user.student.admission_school = self.get_param('admission_school')
-        user.student.admission_major = self.get_param('admission_major', '')
+        param = self.get_param('admission_major')
+        user.student.admission_major = param if param else ''
         user.save()
         from app.course.models import CourseTable
         CourseTable.delete_all([tb.id for tb in user.student.course_tables])
