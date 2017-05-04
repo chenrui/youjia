@@ -17,6 +17,23 @@ from app.course.models import CourseTable, StudyFeedback
 from app.utils.validate import PhoneParam, DateParam, StringParam, ListParam
 
 
+class StaticPng(BaseResource):
+    def get(self, user_id, file):
+        user = current_user
+        if user_id != current_user.get_id():
+            user = user_datastore.find_user(id=user_id)
+            if not user:
+                self.bad_request(errorcode.NOT_FOUND)
+        path = os.path.join(current_app.config['FILE_STORE_BASE'], user.photo_path)
+        try:
+            f = open(path, 'rb')
+            data = f.read()
+            f.close()
+            return Response(data, mimetype='image/png')
+        except:
+            self.bad_request(errorcode.NOT_FOUND)
+
+
 class Account(BaseResource):
 
     @classmethod

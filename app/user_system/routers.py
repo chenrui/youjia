@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 from app.utils.api import RestfulApi
 from . import app
-from .controllers import Account, History, export_user_info, export_all
+from .controllers import Account, History, export_user_info, export_all, StaticPng
 from flask_restful.utils import OrderedDict
 from flask_restful.representations.json import output_json
 
@@ -9,6 +9,7 @@ from flask_restful.representations.json import output_json
 RESOURCES = (
     [Account, '/api/account', '/api/account/<string:action>'],
     [History, '/api/history'],
+    [StaticPng, '/static/<int:user_id>/<string:file>'],
 )
 
 api = RestfulApi(app, default_mediatype='application/json; charset=UTF-8')
