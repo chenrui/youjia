@@ -12,8 +12,7 @@ class PDFFormat(object):
 
     def export(self, user_id):
         self._target = os.path.join(self._path, 'export-%s.pdf' % str(uuid.uuid4()))
-        # fixme:
-        wkhtmltopdf_url = '"http://' + self.__host + '/views/doc/index.html?user_id=%d" ' % user_id
+        wkhtmltopdf_url = '"http://' + self.__host + '/export.html#/?user_id=%d" ' % user_id
         wkhtmltopdf_args = '/usr/local/bin/wkhtmltopdf -q --orientation Landscape --javascript-delay 1000 --no-stop-slow-scripts '
 
         wkhtmltopdf_args = wkhtmltopdf_args + wkhtmltopdf_url

@@ -17,7 +17,5 @@ api.representations = OrderedDict([('application/json; charset=UTF-8',
                                     output_json)])
 api.add_resources(RESOURCES)
 
-app.add_url_rule('/export/user/all',
-                 export_all.__name__, export_all, methods=['GET'])
 app.add_url_rule('/export/user/info',
-                 export_user_info.__name__, export_user_info, methods=['GET'])
+                 export_all.__name__, export_all, methods=['GET'])
