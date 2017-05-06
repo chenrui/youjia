@@ -493,7 +493,7 @@ def export_course_table():
             raise
     except:
         BaseResource.bad_request(errorcode.BAD_REQUEST)
-    if not user.has_role(RoleType.student) or user.has_role(RoleType.teacher):
+    if not user.has_role(RoleType.student) and not user.has_role(RoleType.teacher):
         BaseResource.bad_request(errorcode.BAD_REQUEST)
     wb = export_course_tb(user)
     output = StringIO()
