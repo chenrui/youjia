@@ -48,11 +48,6 @@ class ProductConfig(Config):
     LOGIN_DISABLED = False
 
     # DATABASE CONFIGURATION
-    DB_USER = 'root'
-    DB_PASSWD = '123456'
-    DB_HOST = '10.4.5.199'
-    DB_PORT = 3306
-    DB_NAME = 'yunfang'
     SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://%s:%s@%s:%s/%s?charset=utf8' % (
         DB_USER, DB_PASSWD, DB_HOST, DB_PORT, DB_NAME)
 
@@ -65,13 +60,6 @@ class DevelopmentConfig(Config):
     LOGIN_DISABLED = False
 
     # DATABASE CONFIGURATION
-    DB_NAME = 'worker'
-    DB_PORT = 3306
-    DB_USER = 'root'
-    DB_PASSWD = '123456'
-    DB_HOST = '10.4.5.220'
-    # DB_PASSWD = 'swad@APT123'
-    DB_HOST = '127.0.0.1'
     SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://%s:%s@%s:%s/%s?charset=utf8' % (
         DB_USER, DB_PASSWD, DB_HOST, DB_PORT, DB_NAME)
 
